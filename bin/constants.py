@@ -33,14 +33,14 @@ TREND = {'database': _DATABASE,
 
 
 UPS = {'database': _DATABASE,
+       'sql_table': "ups",
        'sql_command': "INSERT INTO ups ("
                       "sample_time, sample_epoch, "
                       "volt_in, volt_bat, charge_bat, "
                       "load_ups, runtime_bat"
                       ")"
                       "VALUES (?, ?, ?, ?, ?, ?, ?)",
-       'sql_table': "ups",
-       'report_time': 60,
-       'cycles': 3,
+       'report_interval': 900,
+       'delay': 0,
        'samplespercycle': 5
        }

@@ -5,6 +5,7 @@ Communicate with the UPS.
 Store data from a supported UPS in an sqlite3 database.
 """
 
+import argparse
 import configparser
 import datetime as dt
 import os
@@ -17,8 +18,22 @@ import traceback
 
 import mausy5043_common.funfile as mf
 import mausy5043_common.libsignals as ml
+import mausy5043_common.libsqlite3 as m3
 
 import constants
+import libbups as bl
+
+parser = argparse.ArgumentParser(description="Execute the bups daemon.")
+parser_group = parser.add_mutually_exclusive_group(required=True)
+parser_group.add_argument("--start",
+                          action="store_true",
+                          help="start the daemon as a service"
+                          )
+parser_group.add_argument("--debug",
+                          action="store_true",
+                          help="start the daemon in debugging mode"
+                          )
+OPTION = parser.parse_args()
 
 # constants
 DEBUG = False
@@ -31,42 +46,57 @@ MYROOT = "/".join(HERE[0:-3])
 # host_name :
 NODE = os.uname()[1]
 
-
 # example values:
-# HERE: ['', 'home', 'pi', 'upsdiagdd', 'bin', 'ups.py']
+# HERE: ['', 'home', 'pi', 'bups', 'bin', 'ups.py']
 # MYID: 'ups.py
-# MYAPP: upsdiagd
+# MYAPP: bups
 # MYROOT: /home/pi
 # NODE: rbups
 
+API_BL = None
 
 def main():
     """Execute main loop."""
-    global DEBUG
-    global MYAPP
-    global MYID
-    global MYROOT
+    global API_BL
+    set_led('ups', 'orange')
     killer = ml.GracefulKiller()
-    iniconf = configparser.ConfigParser()
-    iniconf.read(f'{MYROOT}/{MYAPP}/config.ini')
-    # report_time = iniconf.getint(MYID, 'reporttime')
-    report_time = constants.UPS['report_time']
-    # fdatabase = f"{MYROOT}/{iniconf.get('DEFAULT', 'databasefile')}"
-    fdatabase = constants.UPS['database']
-    # sqlcmd = iniconf.get(MYID, 'sqlcmd')
-    sqlcmd = constants.UPS['sql_command']
-    # samples_averaged = iniconf.getint(MYID, 'samplespercycle') \
-    #                   * iniconf.getint(MYID, 'cycles')
-    # sample_time = report_time / iniconf.getint(MYID, 'samplespercycle')
-    samples_averaged = int(constants.UPS['samplespercycle']) \
-                       * int(constants.UPS['cycles'])
-    sample_time = report_time / int(constants.UPS['samplespercycle'])
-    data = []
+    API_BL = bl.Ups(DEBUG)
 
-    test_db_connection(fdatabase)
+    sql_db = m3.SqlDatabase(database=constants.UPS['database'],
+                            table='mains', insert=constants.UPS['sql_command'],
+                            debug=DEBUG
+                            )
 
-    pause_time = time.time()
+    report_interval = int(constants.UPS['report_interval'])
+    sample_interval = report_interval / int(constants.UPS['samplespercycle'])
+
+    next_time = time.time() + (sample_interval - (time.time() % sample_interval))
+    rprt_time = time.time() + (report_interval - (time.time() % report_interval))
+
+    # report_time = constants.UPS['report_time']
+    # # fdatabase = f"{MYROOT}/{iniconf.get('DEFAULT', 'databasefile')}"
+    # fdatabase = constants.UPS['database']
+    # # sqlcmd = iniconf.get(MYID, 'sqlcmd')
+    # sqlcmd = constants.UPS['sql_command']
+    # # samples_averaged = iniconf.getint(MYID, 'samplespercycle') \
+    # #                   * iniconf.getint(MYID, 'cycles')
+    # # sample_time = report_time / iniconf.getint(MYID, 'samplespercycle')
+    # samples_averaged = int(constants.UPS['samplespercycle']) \
+    #                    * int(constants.UPS['cycles'])
+    # sample_time = report_time / int(constants.UPS['samplespercycle'])
     while not killer.kill_now:
+        if time.time() > next_time:
+            start_time = time.time()
+            try:
+                succes = API_BL.get_telegram()
+                set_led('ups', 'green')
+            except Exception:  # noqa
+                set_led('ups', 'red')
+                mf.syslog_trace("Unexpected error while trying to do some work!", syslog.LOG_CRIT, DEBUG)
+                mf.syslog_trace(traceback.format_exc(), syslog.LOG_CRIT, DEBUG)
+                raise
+
+
         if time.time() > pause_time:
             start_time = time.time()
             result = do_work()
@@ -97,105 +127,6 @@ def main():
                 mf.syslog_trace("................................", False, DEBUG)
         else:
             time.sleep(1.0)
-
-
-def do_work():
-    """Do the thing.
-    Example:
-    *2*  battery.charge: 100
-        battery.charge.low: 20
-    *4*  battery.runtime: 1875
-        battery.type: PbAc
-        device.mfr: EATON
-        device.model: Protection Station 650
-        device.serial: AN2E49008
-        device.type: ups
-        driver.name: usbhid-ups
-        driver.parameter.pollfreq: 30
-        driver.parameter.pollinterval: 2
-        driver.parameter.port: auto
-        driver.parameter.synchronous: no
-        driver.version: 2.7.4
-        driver.version.data: MGE HID 1.39
-        driver.version.internal: 0.41
-        input.transfer.high: 264
-        input.transfer.low: 184
-        outlet.1.desc: PowerShare Outlet 1
-        outlet.1.id: 2
-        outlet.1.status: on
-        outlet.1.switchable: no
-        outlet.2.desc: PowerShare Outlet 2
-        outlet.2.id: 3
-        outlet.2.status: on
-        outlet.2.switchable: no
-        outlet.desc: Main Outlet
-        outlet.id: 1
-        outlet.power: 25
-        outlet.switchable: no
-        output.frequency.nominal: 50
-    *0*  output.voltage: 230.0
-        output.voltage.nominal: 230
-        ups.beeper.status: enabled
-        ups.delay.shutdown: 20
-        ups.delay.start: 30
-        ups.firmware: 1.13
-    *3*  ups.load: 2
-        ups.mfr: EATON
-        ups.model: Protection Station 650
-        ups.power.nominal: 650
-        ups.productid: ffff
-        ups.serial: AN2E49008
-        ups.status: OL
-        ups.timer.shutdown: -1
-        ups.timer.start: -1
-        ups.vendorid: 0463
-    """
-    # 5 datapoints gathered here
-    try:
-        upsc = str(subprocess.check_output(['upsc', 'ups@localhost'],
-                                           stderr=subprocess.STDOUT),
-                   'utf-8').splitlines()
-    except subprocess.CalledProcessError:
-        syslog.syslog(syslog.LOG_ALERT, "Waiting 10s ...")
-
-        time.sleep(10)  # wait to let the driver crash properly
-        mf.syslog_trace("*** RESTARTING nut-server.service ***",
-                        syslog.LOG_ALERT, DEBUG)
-        redo = str(subprocess.check_output(['sudo',
-                                            'systemctl',
-                                            'restart',
-                                            'nut-server.service']
-                                           ),
-                   'utf-8').splitlines()
-        mf.syslog_trace("Returned : {0}".format(redo), False, DEBUG)
-
-        time.sleep(15)
-        mf.syslog_trace("!!! Retrying communication with UPS !!!",
-                        syslog.LOG_ALERT,
-                        DEBUG)
-        upsc = str(subprocess.check_output(['upsc',
-                                            'ups@localhost'
-                                            ],
-                                           stderr=subprocess.STDOUT),
-                   'utf-8').splitlines()
-
-    ups_data = [-1.0, -1.0, -1.0, -1.0, -1.0]
-    for element in upsc:
-        var = element.split(': ')
-        # if var[0] == 'input.voltage':
-        if var[0] == 'output.voltage':
-            ups_data[0] = float(var[1])
-        # not available on Eaton Protection Station:
-        if var[0] == 'battery.voltage':
-            ups_data[1] = float(var[1])
-        if var[0] == 'battery.charge':
-            ups_data[2] = float(var[1])
-        if var[0] == 'ups.load':
-            ups_data[3] = float(var[1])
-        if var[0] == 'battery.runtime':
-            ups_data[4] = float(var[1])
-
-    return ups_data
 
 
 def do_add_to_database(result, fdatabase, sql_cmd):
@@ -284,27 +215,25 @@ def test_db_connection(fdatabase):
         raise
 
 
+def set_led(dev, colour):
+    mf.syslog_trace(f"{dev} is {colour}", False, DEBUG)
+
+    in_dirfile = f'{APPROOT}/www/{colour}.png'
+    out_dirfile = f'{constants.TREND["website"]}/img/{dev}.png'
+    shutil.copy(f'{in_dirfile}', out_dirfile)
+
+
 if __name__ == "__main__":
     # initialise logging
-    syslog.openlog(ident=f'{MYAPP}.{MYID.split(".")[0]}',
-                   facility=syslog.LOG_LOCAL0)
+    syslog.openlog(ident=f'{MYAPP}.{MYID.split(".")[0]}', facility=syslog.LOG_LOCAL0)
 
-    if len(sys.argv) == 2:
-        if sys.argv[1] == 'start':
-            main()
-        elif sys.argv[1] == 'restart':
-            main()
-        elif sys.argv[1] == 'debug':
-            # assist with debugging.
-            DEBUG = True
-            mf.syslog_trace("Debug-mode started.", syslog.LOG_DEBUG, DEBUG)
-            print("Use <Ctrl>+C to stop.")
-            main()
-        else:
-            print("Unknown command")
-            sys.exit(2)
-    else:
-        print("usage: {0!s} start|restart|debug".format(sys.argv[0]))
-        sys.exit(2)
+    if OPTION.debug:
+        DEBUG = True
+        mf.syslog_trace("Debug-mode started.", syslog.LOG_DEBUG, DEBUG)
+        print("Use <Ctrl>+C to stop.")
+
+    # OPTION.start only executes this next line, we don't need to test for it.
+    main()
+
     print("And it's goodnight from him")
-    sys.exit(0)
+
