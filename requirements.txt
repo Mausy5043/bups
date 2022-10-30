@@ -1,0 +1,4 @@
+matplotlib
+pandas
+mausy5043-common
+requests

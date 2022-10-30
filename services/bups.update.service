@@ -1,0 +1,13 @@
+# This service is for updating the repository clone
+
+[Unit]
+Description=bups update service
+After=multi-user.target
+Wants=multi-user.target
+Wants=bups.update.timer
+
+[Service]
+Type=oneshot
+User=pi
+ExecStart=/home/pi/bups/bups --systemd
+TimeoutStopSec=900

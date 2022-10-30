@@ -1,0 +1,10 @@
+# This service is for trending data from the past month(s)
+
+[Unit]
+Description=trending data from past month (service)
+Wants=bups.trend.month.timer
+
+[Service]
+Type=oneshot
+User=pi
+ExecStart=/home/pi/bups/bin/pastmonth.sh -
