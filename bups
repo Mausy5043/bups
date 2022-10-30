@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+pushd "${HERE}" >/dev/null || exit 1
+
+PARENT_COMMAND=$(ps $PPID | tail -n 1 | awk "{print \$5}")
+echo "*** bups caller: ${PARENT_COMMAND}"
+
+# shellcheck disable=SC1091
+source ./bin/constants.sh
+
+# check commandline parameters
+for i in "$@"; do
+    echo "*** bups option: ${i}"
+    case $i in
+    -i | --install)
+        install_bups "${HERE}"
+        ;;
+    -u | --uninstall)
+        unstall_bups
+        ;;
+    -s | --stop)
+        stop_bups
+        ;;
+    -g | --go)
+        start_bups "${HERE}" "-nograph"
+        ;;
+    -b | --boot)
+        boot_bups
+        ;;
+    -r | --restart)
+        restart_bups "${HERE}" 0
+        ;;
+    --systemd )
+        restart_bups "${HERE}" 1
+        ;;
+    --graph)
+        graph_bups "${HERE}"
+        ;;
+    --update)
+        update_bups
+        ;;
+    *)
+        # unknown option
+        echo "** Unknown option **"
+        echo
+        echo "Syntax:"
+        echo "bups [-i|--install] [-g|--go] [-r|--restart|--graph]  [-s|--stop] [-u|--uninstall]"
+        echo
+        exit 1
+        ;;
+    esac
+done
+
+popd >/dev/null || exit 1
