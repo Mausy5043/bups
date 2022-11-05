@@ -68,7 +68,6 @@ def main():
                             insert=constants.UPS['sql_command'],
                             debug=DEBUG
                             )
-    mf.syslog_trace(f"Latest datapoint: {sql_db.latest_datapoint()}", syslog.LOG_INFO, DEBUG)
 
     report_interval = int(constants.UPS['report_interval'])
     sample_interval = report_interval / int(constants.UPS['samplespercycle'])
