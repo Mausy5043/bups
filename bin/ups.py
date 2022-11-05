@@ -16,9 +16,9 @@ import traceback
 import mausy5043_common.funfile as mf
 import mausy5043_common.libsignals as ml
 import mausy5043_common.libsqlite3 as m3
+from pynut3 import nut3
 
 import constants
-from pynut3 import nut3
 
 parser = argparse.ArgumentParser(description="Execute the bups daemon.")
 parser_group = parser.add_mutually_exclusive_group(required=True)
@@ -60,11 +60,12 @@ def main():
     set_led('ups', 'orange')
     killer = ml.GracefulKiller()
 
-    API_NUT = nut3.PyNUT3Client(host=NODE)
-    ups_id = list(API_NUT.list_ups().keys())[0]
+    API_NUT = nut3.PyNUT3Client(host=NODE, debug=DEBUG)
+    ups_id = list(API_NUT.get_dict_ups().keys())[0]
 
     sql_db = m3.SqlDatabase(database=constants.UPS['database'],
-                            table='mains', insert=constants.UPS['sql_command'],
+                            table=constants.UPS['sql_table'],
+                            insert=constants.UPS['sql_command'],
                             debug=DEBUG
                             )
     mf.syslog_trace(f"Latest datapoint: {sql_db.latest_datapoint()}", syslog.LOG_INFO, DEBUG)
@@ -78,20 +79,19 @@ def main():
     while not killer.kill_now:
         if time.time() > next_time:
             start_time = time.time()
-            data = dict()
-            succes = False
+            # succes = False
             try:
-                data = convert_telegram(API_NUT.list_vars(ups_id))
+                data = convert_telegram(API_NUT.get_dict_vars(ups_id))
                 set_led('ups', 'green')
-                succes = True
+                # succes = True
             except Exception:  # noqa
                 set_led('ups', 'red')
                 mf.syslog_trace("Unexpected error while trying to do some work!", syslog.LOG_CRIT, DEBUG)
                 mf.syslog_trace(traceback.format_exc(), syslog.LOG_CRIT, DEBUG)
                 raise
-            if not succes:
-                set_led('mains', 'orange')
-                mf.syslog_trace("Getting UPS vars failed", syslog.LOG_WARNING, DEBUG)
+            # if not succes:
+            #     set_led('mains', 'orange')
+            #     mf.syslog_trace("Getting UPS vars failed", syslog.LOG_WARNING, DEBUG)
 
             # check if we already need to report the result data
             if time.time() > rprt_time:
