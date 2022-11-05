@@ -60,7 +60,7 @@ def main():
     set_led('ups-state', 'orange')
     killer = ml.GracefulKiller()
 
-    API_NUT = nut3.PyNUT3Client(host=NODE, debug=DEBUG)
+    API_NUT = nut3.PyNUT3Client(host=NODE, persistent=False, debug=DEBUG)
     ups_id = list(API_NUT.get_dict_ups().keys())[0]
 
     sql_db = m3.SqlDatabase(database=constants.UPS['database'],
