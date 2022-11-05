@@ -71,42 +71,38 @@ def main():
 
     report_interval = int(constants.UPS['report_interval'])
     sample_interval = report_interval / int(constants.UPS['samplespercycle'])
-
-    next_time = time.time() + (sample_interval - (time.time() % sample_interval))
+    next_time = 0
+    if not DEBUG:
+        next_time = time.time() + (sample_interval - (time.time() % sample_interval))
     rprt_time = time.time() + (report_interval - (time.time() % report_interval))
 
     while not killer.kill_now:
         if time.time() > next_time:
             start_time = time.time()
-            # succes = False
             try:
                 data = convert_telegram(API_NUT.get_dict_vars(ups_id))
-                set_led('ups', 'green')
-                # succes = True
+                mf.syslog_trace(f"Data retrieved: {data}", False, DEBUG)
+                set_led('ups-state', 'green')
             except Exception:  # noqa
-                set_led('ups', 'red')
+                set_led('ups-state', 'red')
                 mf.syslog_trace("Unexpected error while trying to do some work!", syslog.LOG_CRIT, DEBUG)
                 mf.syslog_trace(traceback.format_exc(), syslog.LOG_CRIT, DEBUG)
                 raise
-            # if not succes:
-            #     set_led('mains', 'orange')
-            #     mf.syslog_trace("Getting UPS vars failed", syslog.LOG_WARNING, DEBUG)
 
             # check if we already need to report the result data
             if time.time() > rprt_time:
                 mf.syslog_trace("Reporting", False, DEBUG)
-                mf.syslog_trace(f"{data}", False, DEBUG)
                 try:
                     sql_db.queue(data)
                 except Exception:  # noqa
-                    set_led('mains', 'red')
+                    set_led('ups-state', 'red')
                     mf.syslog_trace("Unexpected error while trying to queue the data", syslog.LOG_ALERT, DEBUG)
                     mf.syslog_trace(traceback.format_exc(), syslog.LOG_ALERT, DEBUG)
                     raise  # may be changed to pass if errors can be corrected.
                 try:
                     sql_db.insert(method='replace')
                 except Exception:  # noqa
-                    set_led('mains', 'red')
+                    set_led('ups-state', 'red')
                     mf.syslog_trace("Unexpected error while trying to commit the data to the database",
                                     syslog.LOG_ALERT, DEBUG)
                     mf.syslog_trace(traceback.format_exc(), syslog.LOG_ALERT, DEBUG)
