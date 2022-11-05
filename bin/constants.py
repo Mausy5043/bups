@@ -40,7 +40,7 @@ UPS = {'database': _DATABASE,
                       "load_ups, runtime_bat"
                       ")"
                       "VALUES (?, ?, ?, ?, ?, ?, ?)",
-       'report_interval': 900,
+       'report_interval': 180,
        'delay': 0,
-       'samplespercycle': 5
+       'samplespercycle': 1
        }
