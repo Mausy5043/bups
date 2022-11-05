@@ -1,4 +1,5 @@
 matplotlib
-pandas
 mausy5043-common
+pandas
+pynut3
 requests
