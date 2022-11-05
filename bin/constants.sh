@@ -36,7 +36,6 @@ declare -a bups_services=("bups.ups.service")
 # SQLite3 support (incl python3)
 declare -a bups_apt_packages=("build-essential" "python3" "python3-dev" "python3-pip"
         "libatlas-base-dev" "libxcb1" "libopenjp2-7" "libtiff5" "libglib2.0-dev"
-        "nut"
         "sqlite3")
 # placeholders for trendgraphs to make website work regardless of the state of the graphs.
 declare -a bups_graphs=('bups_hours_CHG.png'
