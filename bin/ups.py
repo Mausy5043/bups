@@ -57,7 +57,7 @@ API_NUT = None
 def main():
     """Execute main loop."""
     global API_NUT
-    set_led('ups', 'orange')
+    set_led('ups-state', 'orange')
     killer = ml.GracefulKiller()
 
     API_NUT = nut3.PyNUT3Client(host=NODE, debug=DEBUG)
