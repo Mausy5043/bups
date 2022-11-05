@@ -156,13 +156,6 @@ install_bups() {
         action_apt_install "${PKG}"
     done
 
-    echo "Activating BT-support..."
-    sudo addgroup --gid 112 bluetooth
-    sudo usermod -aG bluetooth pi
-    sudo rm /etc/modprobe.d/dietpi-disable_bluetooth.conf
-    sudo sed -i /^[[:blank:]]*dtoverlay=disable-bt/d /boot/config.txt
-    echo
-
     # install Python3 stuff
     python3 -m pip install --upgrade pip setuptools wheel
     python3 -m pip install -r requirements.txt
