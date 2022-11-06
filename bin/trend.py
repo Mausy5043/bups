@@ -32,7 +32,7 @@ OPTION = ""
 DEBUG = False
 
 
-def fetch_data(hours_to_fetch=48, aggregation='15min'):
+def fetch_data(hours_to_fetch=48, aggregation='5min'):
     """Query the database to fetch the requested data
 
     Args:
@@ -228,7 +228,7 @@ def main():
         #     f'/tmp/{MYAPP}/site/img/pastday_', fetch_last_day(OPTION.hours),
         #     f"Trend afgelopen uren ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})"
         # )
-        plot_graph(constants.TREND['day_graph'], fetch_data(hours_to_fetch=OPTION.hours, aggregation='H'),
+        plot_graph(constants.TREND['day_graph'], fetch_data(hours_to_fetch=OPTION.hours, aggregation='5min'),
                    f" trend afgelopen dagen ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})")
     if OPTION.days:
         # plot_graph(
@@ -236,7 +236,7 @@ def main():
         #     fetch_last_day(OPTION.days * 24),
         #     f"Trend afgelopen dagen ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})"
         # )
-        plot_graph(constants.TREND['month_graph'], fetch_data(hours_to_fetch=OPTION.days * 24, aggregation='D'),
+        plot_graph(constants.TREND['month_graph'], fetch_data(hours_to_fetch=OPTION.days * 24, aggregation='H'),
                    f" trend per uur afgelopen maand ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})")
     if OPTION.months:
         # plot_graph(
@@ -244,7 +244,7 @@ def main():
         #     fetch_last_day(OPTION.days * 24),
         #     f"Trend afgelopen dagen ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})"
         # )
-        plot_graph(constants.TREND['year_graph'], fetch_data(hours_to_fetch=OPTION.months * 31 * 24, aggregation='A'),
+        plot_graph(constants.TREND['year_graph'], fetch_data(hours_to_fetch=OPTION.months * 31 * 24, aggregation='D'),
                    f" trend per dag afgelopen maanden ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})")
 
 
