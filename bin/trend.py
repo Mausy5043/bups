@@ -139,10 +139,10 @@ def plot_graph(output_file, data_dict, plot_title):
         # ###############################
         """
         plt.rc('font', size=fig_fontsize)
-        ax1 = data_frame.plot(kind='line', marker='.', figsize=(fig_x, fig_y))
+        ax1 = data_frame.plot(kind='line', figsize=(fig_x, fig_y))
         # linewidth and alpha need to be set separately
         for i, l in enumerate(ax1.lines):
-            plt.setp(l, alpha=ahpla, linewidth=1, linestyle=' ')
+            plt.setp(l, alpha=ahpla, linewidth=2, linestyle='-')
         ax1.set_ylabel(parameter)
         if parameter == 'temperature_ac':
             ax1.set_ylim([12, 28])
@@ -151,7 +151,7 @@ def plot_graph(output_file, data_dict, plot_title):
         ax1.grid(which='major', axis='y', color='k', linestyle='--', linewidth=0.5)
         plt.title(f'{parameter} {plot_title}')
         plt.tight_layout()
-        plt.savefig(fname=f'{output_file}_{parameter}.png', format='png')  # bbox_inches='tight'
+        plt.savefig(fname=f'{output_file}_{parameter}.png', format='png')
 
 
 """
