@@ -60,18 +60,11 @@ def fetch_data(hours_to_fetch=48, aggregation='15min'):
     # resample to monotonic timeline
     df = df.resample(f'{aggregation}').mean()
     df = df.interpolate(method='slinear')
-    df = df.reset_index(level=['sample_epoch'])
     if DEBUG:
         print(df)
     df_v = collate(None, df, columns_to_drop=['charge_bat', 'load_ups', 'runtime_bat'])
-    if DEBUG:
-        print(df_v)
     df_chg = collate(None, df, columns_to_drop=['volt_in', 'volt_bat', 'load_ups', 'runtime_bat'])
-    if DEBUG:
-        print(df_chg)
     df_run = collate(None, df, columns_to_drop=['volt_in', 'volt_bat', 'charge_bat', 'load_ups'])
-    if DEBUG:
-        print(df_run)
 
     data_dict = {'V': df_v, 'CHG': df_chg, 'RUN': df_run}
     return data_dict
@@ -158,8 +151,7 @@ def plot_graph(output_file, data_dict, plot_title):
         ax1.grid(which='major', axis='y', color='k', linestyle='--', linewidth=0.5)
         plt.title(f'{parameter} {plot_title}')
         plt.tight_layout()
-        plt.savefig(fname=f'{output_file}_{parameter}.png', format='png', # bbox_inches='tight'
-                    )
+        plt.savefig(fname=f'{output_file}_{parameter}.png', format='png')  # bbox_inches='tight'
 
 
 """
