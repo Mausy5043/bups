@@ -154,69 +154,6 @@ def plot_graph(output_file, data_dict, plot_title):
         plt.savefig(fname=f'{output_file}_{parameter}.png', format='png')
 
 
-"""
-    # ###############################
-    # Create a line plot of load and line voltage
-    # ###############################
-    plt.rc('font', size=fig_fontsize)
-    ax1 = data_frame.plot(x='sample_epoch', y=['load_ups', 'volt_in'], kind='line', figsize=(fig_x, fig_y),
-                          style=['b-', 'r-'], secondary_y=['volt_in'])
-    lws = [1]
-    lwsr = [1]
-    alp = [ahpla]
-    alpr = [ahpla]
-    for i, l in enumerate(ax1.lines):
-        plt.setp(l, alpha=alp[i], linewidth=lws[i])
-    for i, l in enumerate(ax1.right_ax.lines):
-        plt.setp(l, alpha=alpr[i], linewidth=lwsr[i])
-    ax1.set_ylim(y_ax_limits(data_frame['load_ups'], 0.5))
-    ax1.right_ax.set_ylim(y_ax_limits(data_frame['volt_in'], 20))
-    ax1.set_ylabel("[%]")
-    ax1.right_ax.set_ylabel("[V]")
-    ax1.legend(loc='upper left', framealpha=0.2, labels=['load'])
-    ax1.right_ax.legend(loc='upper right', framealpha=0.2, labels=['line'])
-    # ax1.set_xlabel("Datetime")
-    ax1.grid(which='major', axis='y', color='k', linestyle='--', linewidth=0.5)
-    plt.title(f'{plot_title}')
-    # plt.tight_layout()
-    plt.savefig(fname=f'{output_file}_V.png', format='png')
-
-    # ###############################
-    # Create a line plot of runtime
-    # ###############################
-    plt.rc('font', size=fig_fontsize)
-    ax1 = data_frame.plot(x='sample_epoch', y=['runtime_bat'], kind='line', figsize=(fig_x, fig_y), style=['g'])
-    lws = [4]
-    alp = [ahpla]
-    for i, l in enumerate(ax1.lines):
-        plt.setp(l, alpha=alp[i], linewidth=lws[i])
-    ax1.set_ylim(y_ax_limits(data_frame['runtime_bat'], 50))
-    ax1.set_ylabel("[sec]")
-    ax1.legend(loc='upper left', framealpha=0.2, labels=['runtime'])
-    # ax1.set_xlabel("Datetime")
-    ax1.grid(which='major', axis='y', color='k', linestyle='--', linewidth=0.5)
-    # plt.tight_layout()
-    plt.savefig(fname=f'{output_file}_RUN.png', format='png')
-
-    # ###############################
-    # Create a line plot of charge
-    # ###############################
-    plt.rc('font', size=fig_fontsize)
-    ax1 = data_frame.plot(x='sample_epoch', y=['charge_bat'], kind='line', figsize=(fig_x, fig_y), style=['brown'])
-    lws = [4]
-    alp = [ahpla]
-    for i, l in enumerate(ax1.lines):
-        plt.setp(l, alpha=alp[i], linewidth=lws[i])
-    ax1.set_ylim(y_ax_limits(data_frame['charge_bat'], 50))
-    ax1.set_ylabel("[%]")
-    ax1.legend(loc='upper left', framealpha=0.2, labels=['charge'])
-    # ax1.set_xlabel("Datetime")
-    ax1.grid(which='major', axis='y', color='k', linestyle='--', linewidth=0.5)
-    # plt.tight_layout()
-    plt.savefig(fname=f'{output_file}_CHG.png', format='png')
-"""
-
-
 def main():
     """
       This is the main loop
