@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Project constants for use in Python3 scripts."""
+
 import os
 import sys
 
