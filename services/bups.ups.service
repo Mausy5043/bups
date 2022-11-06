@@ -8,7 +8,7 @@ After=multi-user.target
 Type=simple
 User=pi
 # ExecStartPre=/bin/sleep 20
-ExecStart=/home/pi/bups/bin/ups.py --start
+ExecStart=/home/pi/bups/bin/ups.py --start --host rbups.local
 RestartSec=360s
 Restart=on-failure
 # Be patient:
