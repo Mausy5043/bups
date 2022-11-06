@@ -32,15 +32,19 @@ OPTION = ""
 DEBUG = False
 
 
-def fetch_data(hours_to_fetch=48, aggregation='2min'):
+def fetch_data(hours_to_fetch=48, aggregation='15min'):
+    """Query the database to fetch the requested data
+
+    Args:
+        hours_to_fetch (int): number of hours of data to fetch
+        aggregation (str): number of minutes to aggregate per datapoint
+
+    Returns:
+        dictionary of dataframes
     """
-    Query the database to fetch the requested data
-    :param hours_to_fetch:      (int) number of hours of data to fetch
-    :param aggregation:         (int) number of minutes to aggregate per datapoint
-    :return:
-    """
-    df_cmp = None
-    df_t = None
+    df_v = None
+    df_chg = None
+    df_run = None
     if DEBUG:
         print("*** fetching UPS data ***")
     where_condition = f" (sample_time >= datetime(\'now\', \'-{hours_to_fetch + 1} hours\'))"
@@ -48,11 +52,7 @@ def fetch_data(hours_to_fetch=48, aggregation='2min'):
     if DEBUG:
         print(s3_query)
     with s3.connect(DATABASE) as con:
-        df = pd.read_sql_query(s3_query,
-                               con,
-                               parse_dates='sample_time',
-                               index_col='sample_epoch'
-                               )
+        df = pd.read_sql_query(s3_query, con, parse_dates='sample_time', index_col='sample_epoch')
     for c in df.columns:
         if c not in ['sample_time']:
             df[c] = pd.to_numeric(df[c], errors='coerce')
@@ -61,9 +61,38 @@ def fetch_data(hours_to_fetch=48, aggregation='2min'):
     df = df.resample(f'{aggregation}').mean()
     df = df.interpolate(method='slinear')
     df = df.reset_index(level=['sample_epoch'])
-    data_dict = dict()
-    data_dict['ups'] = df
+    if DEBUG:
+        print(df)
+    df_v = collate(None, df, columns_to_drop=['charge_bat', 'load_ups', 'runtime_bat'])
+    if DEBUG:
+        print(df_v)
+    df_chg = collate(None, df, columns_to_drop=['volt_in', 'volt_bat', 'load_ups', 'runtime_bat'])
+    if DEBUG:
+        print(df_chg)
+    df_run = collate(None, df, columns_to_drop=['volt_in', 'volt_bat', 'charge_bat', 'load_ups'])
+    if DEBUG:
+        print(df_run)
+
+    data_dict = {'V': df_v, 'CHG': df_chg, 'RUN': df_run}
     return data_dict
+
+
+def collate(prev_df, data_frame, columns_to_drop=None):
+    if columns_to_drop is None:
+        columns_to_drop = list()
+    # drop the 'columns_to_drop'
+    for col in columns_to_drop:
+        data_frame = data_frame.drop(col, axis=1, errors='ignore')
+    # if DEBUG:
+    #     print()
+    #     print(new_name)
+    #     print(data_frame)
+    # collate both dataframes
+    if prev_df is not None:
+        data_frame = pd.merge(prev_df, data_frame, left_index=True, right_index=True, how='outer')
+    if DEBUG:
+        print(data_frame)
+    return data_frame
 
 
 def y_ax_limits(data_set, accuracy):
@@ -86,18 +115,54 @@ def y_ax_limits(data_set, accuracy):
     return [lo_limit, hi_limit]
 
 
-def plot_graph(output_file, data_frame, plot_title):
-    """
-    Create graphs
-    """
+def plot_graph(output_file, data_dict, plot_title):
+    """Plot the data into a graph
 
-    # Set the bar width
-    # bar_width = 0.75
+    Args:
+        output_file (str): (str) name of the trendgraph file
+        data_dict (dict): contains the data for the lines. Each paramter is a separate pandas Dataframe
+                      {'df': Dataframe}
+        plot_title (str): title to be displayed above the plot
+    Returns:
+        None
+    """
+    if DEBUG:
+        print("*** plotting ***")
     fig_x = 10
     fig_y = 2.5
     fig_fontsize = 6.5
     ahpla = 0.6
+    for parameter in data_dict:
+        if DEBUG:
+            print(parameter)
+        data_frame = data_dict[parameter]
+        fig_x = 20
+        fig_y = 7.5
+        fig_fontsize = 13
+        ahpla = 0.7
+        """
+        # ###############################
+        # Create a line plot of temperatures
+        # ###############################
+        """
+        plt.rc('font', size=fig_fontsize)
+        ax1 = data_frame.plot(kind='line', marker='.', figsize=(fig_x, fig_y))
+        # linewidth and alpha need to be set separately
+        for i, l in enumerate(ax1.lines):
+            plt.setp(l, alpha=ahpla, linewidth=1, linestyle=' ')
+        ax1.set_ylabel(parameter)
+        if parameter == 'temperature_ac':
+            ax1.set_ylim([12, 28])
+        ax1.legend(loc='lower left', ncol=8, framealpha=0.2)
+        ax1.set_xlabel("Datetime")
+        ax1.grid(which='major', axis='y', color='k', linestyle='--', linewidth=0.5)
+        plt.title(f'{parameter} {plot_title}')
+        plt.tight_layout()
+        plt.savefig(fname=f'{output_file}_{parameter}.png', format='png', # bbox_inches='tight'
+                    )
 
+
+"""
     # ###############################
     # Create a line plot of load and line voltage
     # ###############################
@@ -157,6 +222,7 @@ def plot_graph(output_file, data_frame, plot_title):
     ax1.grid(which='major', axis='y', color='k', linestyle='--', linewidth=0.5)
     # plt.tight_layout()
     plt.savefig(fname=f'{output_file}_CHG.png', format='png')
+"""
 
 
 def main():
@@ -171,7 +237,7 @@ def main():
         #     f"Trend afgelopen uren ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})"
         # )
         plot_graph(constants.TREND['day_graph'], fetch_data(hours_to_fetch=OPTION.hours, aggregation='H'),
-                   f" trend afgelopen dagen ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})" )
+                   f" trend afgelopen dagen ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})")
     if OPTION.days:
         # plot_graph(
         #     f'/tmp/{MYAPP}/site/img/pastmonth_',
@@ -179,7 +245,7 @@ def main():
         #     f"Trend afgelopen dagen ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})"
         # )
         plot_graph(constants.TREND['month_graph'], fetch_data(hours_to_fetch=OPTION.days * 24, aggregation='D'),
-                   f" trend per uur afgelopen maand ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})" )
+                   f" trend per uur afgelopen maand ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})")
     if OPTION.months:
         # plot_graph(
         #     f'/tmp/{MYAPP}/site/img/pastmonth_',
@@ -187,7 +253,7 @@ def main():
         #     f"Trend afgelopen dagen ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})"
         # )
         plot_graph(constants.TREND['year_graph'], fetch_data(hours_to_fetch=OPTION.months * 31 * 24, aggregation='A'),
-                   f" trend per dag afgelopen maanden ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})" )
+                   f" trend per dag afgelopen maanden ({dt.now().strftime('%d-%m-%Y %H:%M:%S')})")
 
 
 if __name__ == "__main__":
