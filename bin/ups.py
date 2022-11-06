@@ -18,9 +18,12 @@ import mausy5043_common.libsignals as ml
 import mausy5043_common.libsqlite3 as m3
 from pynut3 import nut3
 
-import constants
-
 parser = argparse.ArgumentParser(description="Execute the bups daemon.")
+parser.add_argument("--host",
+                    type=str,
+                    required=True,
+                    help="IP-address or hostname of the UPS-server"
+                    )
 parser_group = parser.add_mutually_exclusive_group(required=True)
 parser_group.add_argument("--start",
                           action="store_true",
@@ -31,6 +34,9 @@ parser_group.add_argument("--debug",
                           help="start the daemon in debugging mode"
                           )
 OPTION = parser.parse_args()
+
+# pylint: disable=wrong-import-position
+import constants  # noqa
 
 # constants
 DEBUG = False
@@ -60,7 +66,8 @@ def main():
     set_led('ups-state', 'orange')
     killer = ml.GracefulKiller()
 
-    API_NUT = nut3.PyNUT3Client(host=NODE, persistent=False, debug=DEBUG)
+    API_NUT = nut3.PyNUT3Client(host=OPTION.host, persistent=False, debug=DEBUG)
+    print(f"Connected to UPS-server: {OPTION.host}")
     ups_id = list(API_NUT.get_dict_ups().keys())[0]
 
     sql_db = m3.SqlDatabase(database=constants.UPS['database'],
@@ -140,7 +147,7 @@ def convert_telegram(data_dict):
     return {'sample_time': idx_dt.strftime(constants.DT_FORMAT),
             'sample_epoch': epoch,
             'volt_in': data_dict['output.voltage'],
-            'volt_bat': -1,   # ##Not on Eaton Protection Station## data_dict['battery.voltage'],
+            'volt_bat': -1,  # ##Not on Eaton Protection Station## data_dict['battery.voltage'],
             'charge_bat': data_dict['battery.charge'],
             'load_ups': data_dict['ups.load'],
             'runtime_bat': data_dict['battery.runtime']
