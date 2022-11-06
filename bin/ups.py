@@ -130,6 +130,7 @@ def main():
 
 
 def set_led(dev, colour):
+    """Activate te requested LED on the website"""
     mf.syslog_trace(f"{dev} is {colour}", False, DEBUG)
 
     in_dirfile = f'{APPROOT}/www/{colour}.png'
