@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """Create trendbargraphs for various periods of data."""
 
-import warnings
-
-warnings.simplefilter(action='ignore', category=FutureWarning)
-
 import argparse
-from datetime import datetime as dt
 import os
 import sqlite3 as s3
-import pandas as pd
+import warnings
+from datetime import datetime as dt
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 import constants
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # app_name :
 HERE = os.path.realpath(__file__).split('/')
