@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+APPROOT="${HERE}/../.."
 # shellcheck disable=SC2034
 app_name="bups"
-if [ -f "${HOME}/.${app_name}.branch" ]; then
-    branch_name=$(<"${HOME}/.${app_name}.branch")
+if [ -f "${APPROOT}/.${app_name}.branch" ]; then
+    branch_name=$(<"${APPROOT}/.${app_name}.branch")
 else
     branch_name="master"
 fi
@@ -135,7 +137,7 @@ unstall_bups() {
     action_services disable
     action_timers rm
     action_services rm
-    rm "${HOME}/.${app_name}.branch"
+    rm "${APPROOT}/.${app_name}.branch"
 }
 
 # install the application
@@ -146,8 +148,8 @@ install_bups() {
     # to suppress git detecting changes by chmod
     git config core.fileMode false
     # note the branchname being used
-    if [ ! -e "${HOME}/.${app_name}.branch" ]; then
-        echo "${branch_name}" >"${HOME}/.${app_name}.branch"
+    if [ ! -e "${APPROOT}/.${app_name}.branch" ]; then
+        echo "${branch_name}" >"${APPROOT}/.${app_name}.branch"
     fi
 
     echo "Installing ${app_name} on $(date)"
@@ -253,8 +255,8 @@ getfilefromserver() {
     file="${1}"
     mode="${2}"
 
-    cp -rvf "/srv/config/${file}" "${HOME}/.config/"
-    chmod -R "${mode}" "${HOME}/.config/${file}"
+    cp -rvf "/srv/config/${file}" "${APPROOT}/.config/"
+    chmod -R "${mode}" "${APPROOT}/.config/${file}"
 }
 
 # create a placeholder graphic for Fles if it doesn't exist already
