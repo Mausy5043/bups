@@ -9,7 +9,7 @@ app_name="bups"
 if [ -f "${APPROOT}/.${app_name}.branch" ]; then
     branch_name=$(<"${APPROOT}/.${app_name}.branch")
 else
-    branch_name="master"
+    branch_name=$(git symbolic-ref --short -q HEAD)
 fi
 
 # determine machine identity
