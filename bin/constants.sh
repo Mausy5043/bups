@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
-APPROOT="${HERE}/../.."
+APPDIR="${HERE}/.."
+APPROOT="${APPDIR}/.."
+
 # shellcheck disable=SC2034
 app_name="bups"
 if [ -f "${APPROOT}/.${app_name}.branch" ]; then
