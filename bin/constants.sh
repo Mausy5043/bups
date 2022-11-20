@@ -11,8 +11,6 @@ if [ -f "${APPROOT}/.${app_name}.branch" ]; then
 else
     branch_name="master"
 fi
-# Python library of common functions to be used
-commonlibbranch="v2_0"
 
 # determine machine identity
 host_name=$(hostname)
