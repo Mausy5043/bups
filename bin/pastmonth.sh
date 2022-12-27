@@ -32,6 +32,10 @@ if [ "${MAINTENANCE}" == "-" ]; then
         sqlite3 "${db_full_path}" \
                 "DELETE FROM data WHERE sample_epoch < ${PURGE_EPOCH};"
     fi
+    # sync the database into the cloud
+    if command -v rclone; then
+        rclone sync -v "${database_path}" remote:raspi/_databases
+    fi
 fi
 
 ./trend.py --days 0

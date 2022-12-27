@@ -9,9 +9,3 @@ pushd "${HERE}" >/dev/null || exit 1
     ./trend.py --hours 0
 
 popd >/dev/null || exit
-
-if command -v /usr/bin/rclone ; then
-    echo "yup"
-else
-    echo "nope"
-fi

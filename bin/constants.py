@@ -6,9 +6,11 @@ import os
 import sys
 
 _MYHOME = os.environ["HOME"]
-_DATABASE = '/srv/databases/upsdata.sqlite3'
+_DATABASE = '/srv/rmt/_databases/bups/upsdata.sqlite3'
 _WEBSITE = '/tmp/bups/site'
 
+if not os.path.isfile(_DATABASE):
+    _DATABASE = '/srv/databases/upsdata.sqlite3'
 if not os.path.isfile(_DATABASE):
     _DATABASE = '/srv/data/upsdata.sqlite3'
 if not os.path.isfile(_DATABASE):

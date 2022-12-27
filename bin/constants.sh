@@ -17,8 +17,8 @@ host_name=$(hostname)
 
 # construct database paths
 database_filename="upsdata.sqlite3"
-database_path="/srv/databases"
-db_full_path="${database_path}/${database_filename}"
+database_path="/srv/rmt/_databases"
+db_full_path="${database_path}/bups/${database_filename}"
 website_dir="/tmp/${app_name}/site"
 website_image_dir="${website_dir}/img"
 
