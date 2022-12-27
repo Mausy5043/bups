@@ -83,6 +83,10 @@ update_bups() {
     git fetch origin
     git checkout "${branch_name}"
     git reset --hard "origin/${branch_name}" && git clean -f -d
+    # sync the database into the cloud
+    if command -v rclone; then
+        rclone sync -v "${database_path}" remote:raspi/_databases
+    fi
 }
 
 # create graphs
@@ -138,6 +142,10 @@ unstall_bups() {
     action_timers rm
     action_services rm
     rm "${APPROOT}/.${app_name}.branch"
+    # sync the database into the cloud
+    if command -v rclone; then
+        rclone sync -v "${database_path}" remote:raspi/_databases
+    fi
 }
 
 # install the application
@@ -165,6 +173,10 @@ install_bups() {
 
     if [ -f "${db_full_path}" ]; then
         echo "Found existing database."
+        # sync the database from the cloud; it was copied here during building
+        if command -v rclone; then
+            rclone sync -v remote:raspi/_databases "${database_path}"
+        fi
     else
         echo "Creating database."
         sqlite3 "${db_full_path}" <"${ROOT_DIR}/bin/bups.sql"
