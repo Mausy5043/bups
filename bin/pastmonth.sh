@@ -43,8 +43,8 @@ if [ "${MAINTENANCE}" == "-" ]; then
         echo "${db_full_path} syncing... "
         # shellcheck disable=SC2154
         rclone sync -v \
-               "${database_local_root}/${app_name}/${database_filename}" \
-               "${database_remote_root}/${app_name}/${database_filename}"
+               "${database_local_root}/${app_name}" \
+               "${database_remote_root}/${app_name}"
     fi
 fi
 
