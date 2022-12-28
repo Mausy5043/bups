@@ -16,9 +16,10 @@ fi
 host_name=$(hostname)
 
 # construct database paths
+database_local_root="/srv/rmt/_databases"
+database_remote_root="remote:raspi/_databases"
 database_filename="upsdata.sqlite3"
-database_path="/srv/rmt/_databases"
-db_full_path="${database_path}/bups/${database_filename}"
+db_full_path="${database_local_root}/${app_name}/${database_filename}"
 website_dir="/tmp/${app_name}/site"
 website_image_dir="${website_dir}/img"
 
@@ -73,7 +74,7 @@ stop_bups() {
     action_services stop
     # sync the database into the cloud
     if command -v rclone; then
-        rclone sync -v "${database_path}" remote:raspi/_databases
+        rclone sync -v "${db_full_path}" "${database_remote_root}/${app_name}/${database_filename}"
     fi
 }
 
@@ -82,7 +83,6 @@ update_bups() {
     echo "*** $app_name running on $host_name >>>>>>: update"
     git fetch origin || sleep 60
     git fetch origin
-    DIFFLIST=$(git --no-pager diff --name-only "${branch_name}..origin/${branch_name}")
     git pull
     git fetch origin
     git checkout "${branch_name}"
@@ -171,7 +171,7 @@ install_bups() {
         echo "Found existing database."
         # sync the database from the cloud; it was copied here during building
         if command -v rclone; then
-            rclone sync -v remote:raspi/_databases "${database_path}"
+            rclone sync -v "${database_remote_root}" "${database_local_root}"
         fi
     else
         echo "Creating database."
