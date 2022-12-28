@@ -16,9 +16,10 @@ fi
 host_name=$(hostname)
 
 # construct database paths
+database_local_root="/srv/rmt/_databases"
+database_remote_root="remote:raspi/_databases"
 database_filename="upsdata.sqlite3"
-database_path="/srv/databases"
-db_full_path="${database_path}/${database_filename}"
+db_full_path="${database_local_root}/${app_name}/${database_filename}"
 website_dir="/tmp/${app_name}/site"
 website_image_dir="${website_dir}/img"
 
@@ -52,7 +53,7 @@ declare -a bups_graphs=('bups_hours_CHG.png'
 
 # start the application
 start_bups() {
-    echo "*** bups >>>>>>: start $1 $2"
+    echo "*** $app_name running on $host_name >>>>>>: start $1 $2"
     GRAPH=$2
     ROOT_DEAR=$1
     echo "Starting ${app_name} on $(date)"
@@ -67,18 +68,21 @@ start_bups() {
 
 # stop the application
 stop_bups() {
-    echo "*** bups >>>>>>: stop"
+    echo "*** $app_name running on $host_name >>>>>>: stop"
     echo "Stopping ${app_name} on $(date)"
     action_timers stop
     action_services stop
+    # sync the database into the cloud
+    if command -v rclone; then
+        rclone sync -v "${database_local_root}/${app_name}" "${database_remote_root}/${app_name}"
+    fi
 }
 
 # update the repository
 update_bups() {
-    echo "*** bups >>>>>>: update"
+    echo "*** $app_name running on $host_name >>>>>>: update"
     git fetch origin || sleep 60
     git fetch origin
-    DIFFLIST=$(git --no-pager diff --name-only "${branch_name}..origin/${branch_name}")
     git pull
     git fetch origin
     git checkout "${branch_name}"
@@ -87,7 +91,7 @@ update_bups() {
 
 # create graphs
 graph_bups() {
-    echo "*** bups >>>>>>: graph $1"
+    echo "*** $app_name running on $host_name >>>>>>: graph $1"
     ROOT_DIR=$1
 
     echo "Creating graphs [1]"
@@ -101,7 +105,7 @@ graph_bups() {
 # stop, update the repo and start the application
 # do some additional stuff when called by systemd
 restart_bups() {
-    echo "*** bups >>>>>>: restart $1 $2"
+    echo "*** $app_name running on $host_name >>>>>>: restart $1 $2"
     ROOT_DIR=$1
 
     # restarted by --systemd flag
@@ -130,7 +134,7 @@ restart_bups() {
 
 # uninstall the application
 unstall_bups() {
-    echo "*** bups >>>>>>: uninstall"
+    echo "*** $app_name running on $host_name >>>>>>: uninstall"
     echo "Uninstalling ${app_name} on $(date)"
     stop_bups
     action_timers disable
@@ -142,7 +146,7 @@ unstall_bups() {
 
 # install the application
 install_bups() {
-    echo "*** bups >>>>>>: install $1"
+    echo "*** $app_name running on $host_name >>>>>>: install $1"
     ROOT_DIR=$1
 
     # to suppress git detecting changes by chmod
@@ -165,6 +169,10 @@ install_bups() {
 
     if [ -f "${db_full_path}" ]; then
         echo "Found existing database."
+        # sync the database from the cloud; it was copied here during building
+        if command -v rclone; then
+            rclone sync -v "${database_remote_root}" "${database_local_root}"
+        fi
     else
         echo "Creating database."
         sqlite3 "${db_full_path}" <"${ROOT_DIR}/bin/bups.sql"
@@ -189,7 +197,7 @@ install_bups() {
 
 # set-up the application
 boot_bups() {
-    echo "*** bups >>>>>>: boot"
+    echo "*** $app_name running on $host_name >>>>>>: boot"
     # make sure website filetree exists
     if [ ! -d "${website_image_dir}" ]; then
         mkdir -p "${website_image_dir}"
@@ -205,7 +213,7 @@ boot_bups() {
 
 # perform systemctl actions on all timers
 action_timers() {
-    echo "*** bups >>>>>>: action_timers $1"
+    echo "*** $app_name running on $host_name >>>>>>: action_timers $1"
     ACTION=$1
     for TMR in "${bups_timers[@]}"; do
         if [ "${ACTION}" != "rm" ]; then
@@ -220,7 +228,7 @@ action_timers() {
 
 # perform systemctl actions on all services
 action_services() {
-    echo "*** bups >>>>>>: action services $1"
+    echo "*** $app_name running on $host_name >>>>>>: action services $1"
     ACTION=$1
     for SRVC in "${bups_services[@]}"; do
         if [ "${ACTION}" != "rm" ]; then
@@ -237,7 +245,7 @@ action_services() {
 action_apt_install() {
     PKG=$1
     echo "*********************************************************"
-    echo "* Requesting ${PKG}"
+    echo "* $app_name running on $host_name requesting ${PKG}"
     status=$(dpkg -l | awk '{print $2}' | grep -c -e "^${PKG}*")
     if [ "${status}" -eq 0 ]; then
         echo -n "* Installing ${PKG} "
