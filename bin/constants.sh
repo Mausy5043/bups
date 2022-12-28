@@ -74,7 +74,7 @@ stop_bups() {
     action_services stop
     # sync the database into the cloud
     if command -v rclone; then
-        rclone sync -v "$${database_local_root}/${app_name}" "${database_remote_root}/${app_name}"
+        rclone sync -v "${database_local_root}/${app_name}" "${database_remote_root}/${app_name}"
     fi
 }
 
