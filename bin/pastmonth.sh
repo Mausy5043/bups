@@ -28,8 +28,8 @@ if [ "${MAINTENANCE}" == "-" ]; then
         if command -v rclone; then
             # shellcheck disable=SC2154
             rclone sync -v \
-                   "${database_local_root}/backup/${database_filename}" \
-                   "${database_remote_root}/backup/${database_filename}"
+                   "${database_local_root}/backup" \
+                   "${database_remote_root}/backup"
         fi
 
         # Keep upto 10 years of data
