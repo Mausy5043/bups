@@ -48,3 +48,8 @@ UPS = {'database': _DATABASE,
        'delay': 0,
        'samplespercycle': 1
        }
+
+
+if __name__ == "__main__":
+    print(f"home              = {_MYHOME}")
+    print(f"database location = {_DATABASE}")
