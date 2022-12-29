@@ -25,7 +25,7 @@ if [ "${MAINTENANCE}" == "-" ]; then
         # shellcheck disable=SC2154
         cp "${db_full_path}" "${database_local_root}/backup/"
         # sync the backup to the cloud
-        if command -v rclone; then
+        if command -v rclone &> /dev/null; then
             # shellcheck disable=SC2154
             rclone sync -v \
                    "${database_local_root}/backup" \
@@ -39,7 +39,7 @@ if [ "${MAINTENANCE}" == "-" ]; then
                 "DELETE FROM ups WHERE sample_epoch < ${PURGE_EPOCH};"
     fi
     # sync the database into the cloud
-    if command -v rclone; then
+    if command -v rclone &> /dev/null; then
         echo "${db_full_path} syncing... "
         # shellcheck disable=SC2154
         rclone sync -v \

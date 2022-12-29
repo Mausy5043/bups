@@ -73,7 +73,7 @@ stop_bups() {
     action_timers stop
     action_services stop
     # sync the database into the cloud
-    if command -v rclone; then
+    if command -v rclone &> /dev/null; then
         rclone sync -v "${database_local_root}/${app_name}" "${database_remote_root}/${app_name}"
     fi
 }
@@ -170,7 +170,7 @@ install_bups() {
     if [ -f "${db_full_path}" ]; then
         echo "Found existing database."
         # sync the database from the cloud; it was copied here during building
-        if command -v rclone; then
+        if command -v rclone &> /dev/null; then
             rclone sync -v "${database_remote_root}" "${database_local_root}"
         fi
     else
