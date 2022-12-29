@@ -40,9 +40,9 @@ if [ "${MAINTENANCE}" == "-" ]; then
     if command -v rclone &> /dev/null; then
         echo "${db_full_path} syncing... "
         # shellcheck disable=SC2154
-        rclone sync -v \
-               "${database_local_root}/${app_name}" \
-               "${database_remote_root}/${app_name}"
+        rclone copyto -v \
+               "${database_local_root}/${app_name}/${database_filename}" \
+               "${database_remote_root}/${app_name}/${database_filename}"
     fi
 fi
 
