@@ -19,20 +19,16 @@ import mausy5043_common.libsqlite3 as m3
 from pynut3 import nut3
 
 parser = argparse.ArgumentParser(description="Execute the bups daemon.")
-parser.add_argument("--host",
-                    type=str,
-                    required=True,
-                    help="IP-address or hostname of the UPS-server"
-                    )
+parser.add_argument(
+    "--host", type=str, required=True, help="IP-address or hostname of the UPS-server"
+)
 parser_group = parser.add_mutually_exclusive_group(required=True)
-parser_group.add_argument("--start",
-                          action="store_true",
-                          help="start the daemon as a service"
-                          )
-parser_group.add_argument("--debug",
-                          action="store_true",
-                          help="start the daemon in debugging mode"
-                          )
+parser_group.add_argument(
+    "--start", action="store_true", help="start the daemon as a service"
+)
+parser_group.add_argument(
+    "--debug", action="store_true", help="start the daemon in debugging mode"
+)
 OPTION = parser.parse_args()
 
 # pylint: disable=wrong-import-position
@@ -40,7 +36,7 @@ import constants  # noqa
 
 # constants
 DEBUG = False
-HERE = os.path.realpath(__file__).split('/')
+HERE = os.path.realpath(__file__).split("/")
 # runlist id :
 MYID = HERE[-1]
 # app_name :
@@ -63,21 +59,22 @@ API_NUT = None
 def main():
     """Execute main loop."""
     global API_NUT
-    set_led('ups-state', 'orange')
+    set_led("ups-state", "orange")
     killer = ml.GracefulKiller()
 
     API_NUT = nut3.PyNUT3Client(host=OPTION.host, persistent=False, debug=DEBUG)
     print(f"Connected to UPS-server: {OPTION.host}")
     ups_id = list(API_NUT.get_dict_ups().keys())[0]
 
-    sql_db = m3.SqlDatabase(database=constants.UPS['database'],
-                            table=constants.UPS['sql_table'],
-                            insert=constants.UPS['sql_command'],
-                            debug=DEBUG
-                            )
+    sql_db = m3.SqlDatabase(
+        database=constants.UPS["database"],
+        table=constants.UPS["sql_table"],
+        insert=constants.UPS["sql_command"],
+        debug=DEBUG,
+    )
 
-    report_interval = int(constants.UPS['report_interval'])
-    sample_interval = report_interval / int(constants.UPS['samplespercycle'])
+    report_interval = int(constants.UPS["report_interval"])
+    sample_interval = report_interval / int(constants.UPS["samplespercycle"])
     next_time = 0
     if not DEBUG:
         next_time = time.time() + (sample_interval - (time.time() % sample_interval))
@@ -89,10 +86,14 @@ def main():
             try:
                 data = convert_telegram(API_NUT.get_dict_vars(ups_id))
                 mf.syslog_trace(f"Data retrieved: {data}", False, DEBUG)
-                set_led('ups-state', 'green')
+                set_led("ups-state", "green")
             except Exception:  # noqa
-                set_led('ups-state', 'red')
-                mf.syslog_trace("Unexpected error while trying to do some work!", syslog.LOG_CRIT, DEBUG)
+                set_led("ups-state", "red")
+                mf.syslog_trace(
+                    "Unexpected error while trying to do some work!",
+                    syslog.LOG_CRIT,
+                    DEBUG,
+                )
                 mf.syslog_trace(traceback.format_exc(), syslog.LOG_CRIT, DEBUG)
                 raise
 
@@ -102,27 +103,41 @@ def main():
                 try:
                     sql_db.queue(data)
                 except Exception:  # noqa
-                    set_led('ups-state', 'red')
-                    mf.syslog_trace("Unexpected error while trying to queue the data", syslog.LOG_ALERT, DEBUG)
+                    set_led("ups-state", "red")
+                    mf.syslog_trace(
+                        "Unexpected error while trying to queue the data",
+                        syslog.LOG_ALERT,
+                        DEBUG,
+                    )
                     mf.syslog_trace(traceback.format_exc(), syslog.LOG_ALERT, DEBUG)
                     raise  # may be changed to pass if errors can be corrected.
                 try:
-                    sql_db.insert(method='replace')
+                    sql_db.insert(method="replace")
                 except Exception:  # noqa
-                    set_led('ups-state', 'red')
-                    mf.syslog_trace("Unexpected error while trying to commit the data to the database",
-                                    syslog.LOG_ALERT, DEBUG)
+                    set_led("ups-state", "red")
+                    mf.syslog_trace(
+                        "Unexpected error while trying to commit the data to the database",
+                        syslog.LOG_ALERT,
+                        DEBUG,
+                    )
                     mf.syslog_trace(traceback.format_exc(), syslog.LOG_ALERT, DEBUG)
                     raise  # may be changed to pass if errors can be corrected.
 
-            pause_interval = (sample_interval
-                              - (time.time() - start_time)
-                              - (start_time % sample_interval)
-                              )
-            next_time = pause_interval + time.time()  # gives the actual time when the next loop should start
+            pause_interval = (
+                sample_interval
+                - (time.time() - start_time)
+                - (start_time % sample_interval)
+            )
+            next_time = (
+                pause_interval + time.time()
+            )  # gives the actual time when the next loop should start
             # determine moment of next report
-            rprt_time = time.time() + (report_interval - (time.time() % report_interval))
-            mf.syslog_trace(f"Spent {time.time() - start_time:.1f}s getting data", False, DEBUG)
+            rprt_time = time.time() + (
+                report_interval - (time.time() % report_interval)
+            )
+            mf.syslog_trace(
+                f"Spent {time.time() - start_time:.1f}s getting data", False, DEBUG
+            )
             mf.syslog_trace(f"Report in {rprt_time - time.time():.0f}s", False, DEBUG)
             mf.syslog_trace("................................", False, DEBUG)
         else:
@@ -133,9 +148,9 @@ def set_led(dev, colour):
     """Activate te requested LED on the website"""
     mf.syslog_trace(f"{dev} is {colour}", False, DEBUG)
 
-    in_dirfile = f'{APPROOT}/www/{colour}.png'
+    in_dirfile = f"{APPROOT}/www/{colour}.png"
     out_dirfile = f'{constants.TREND["website"]}/img/{dev}.png'
-    shutil.copy(f'{in_dirfile}', out_dirfile)
+    shutil.copy(f"{in_dirfile}", out_dirfile)
 
 
 def convert_telegram(data_dict):
@@ -145,14 +160,15 @@ def convert_telegram(data_dict):
     """
     idx_dt = dt.datetime.now()
     epoch = int(idx_dt.timestamp())
-    return {'sample_time': idx_dt.strftime(constants.DT_FORMAT),
-            'sample_epoch': epoch,
-            'volt_in': data_dict['output.voltage'],
-            'volt_bat': -1,  # ##Not on Eaton Protection Station## data_dict['battery.voltage'],
-            'charge_bat': data_dict['battery.charge'],
-            'load_ups': data_dict['ups.load'],
-            'runtime_bat': data_dict['battery.runtime']
-            }
+    return {
+        "sample_time": idx_dt.strftime(constants.DT_FORMAT),
+        "sample_epoch": epoch,
+        "volt_in": data_dict["output.voltage"],
+        "volt_bat": -1,  # ##Not on Eaton Protection Station## data_dict['battery.voltage'],
+        "charge_bat": data_dict["battery.charge"],
+        "load_ups": data_dict["ups.load"],
+        "runtime_bat": data_dict["battery.runtime"],
+    }
 
 
 if __name__ == "__main__":
