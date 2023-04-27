@@ -23,9 +23,7 @@ parser.add_argument(
     "--host", type=str, required=True, help="IP-address or hostname of the UPS-server"
 )
 parser_group = parser.add_mutually_exclusive_group(required=True)
-parser_group.add_argument(
-    "--start", action="store_true", help="start the daemon as a service"
-)
+parser_group.add_argument("--start", action="store_true", help="start the daemon as a service")
 parser_group.add_argument(
     "--debug", action="store_true", help="start the daemon in debugging mode"
 )
@@ -124,20 +122,14 @@ def main():
                     raise  # may be changed to pass if errors can be corrected.
 
             pause_interval = (
-                sample_interval
-                - (time.time() - start_time)
-                - (start_time % sample_interval)
+                sample_interval - (time.time() - start_time) - (start_time % sample_interval)
             )
             next_time = (
                 pause_interval + time.time()
             )  # gives the actual time when the next loop should start
             # determine moment of next report
-            rprt_time = time.time() + (
-                report_interval - (time.time() % report_interval)
-            )
-            mf.syslog_trace(
-                f"Spent {time.time() - start_time:.1f}s getting data", False, DEBUG
-            )
+            rprt_time = time.time() + (report_interval - (time.time() % report_interval))
+            mf.syslog_trace(f"Spent {time.time() - start_time:.1f}s getting data", False, DEBUG)
             mf.syslog_trace(f"Report in {rprt_time - time.time():.0f}s", False, DEBUG)
             mf.syslog_trace("................................", False, DEBUG)
         else:

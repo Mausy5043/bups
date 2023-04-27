@@ -47,9 +47,7 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
     df_run = None
     if DEBUG:
         print("*** fetching UPS data ***")
-    where_condition = (
-        f" (sample_time >= datetime('now', '-{hours_to_fetch + 1} hours'))"
-    )
+    where_condition = f" (sample_time >= datetime('now', '-{hours_to_fetch + 1} hours'))"
     s3_query = f"SELECT * FROM {TABLE} WHERE {where_condition}"
     if DEBUG:
         print(s3_query)
@@ -61,9 +59,7 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
         if c not in ["sample_time"]:
             df[c] = pd.to_numeric(df[c], errors="coerce")
     df.index = (
-        pd.to_datetime(df.index, unit="s")
-        .tz_localize("UTC")
-        .tz_convert("Europe/Amsterdam")
+        pd.to_datetime(df.index, unit="s").tz_localize("UTC").tz_convert("Europe/Amsterdam")
     )
     # resample to monotonic timeline
     df = df.resample(f"{aggregation}").mean()
@@ -210,17 +206,13 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create a trendgraph")
-    parser.add_argument(
-        "-hr", "--hours", type=int, help="create an hour-trend of <HOURS>"
-    )
+    parser.add_argument("-hr", "--hours", type=int, help="create an hour-trend of <HOURS>")
     parser.add_argument("-d", "--days", type=int, help="create a day-trend of <DAYS>")
     parser.add_argument(
         "-m", "--months", type=int, help="number of months of data to use for the graph"
     )
     parser_group = parser.add_mutually_exclusive_group(required=False)
-    parser_group.add_argument(
-        "--debug", action="store_true", help="start in debugging mode"
-    )
+    parser_group.add_argument("--debug", action="store_true", help="start in debugging mode")
     OPTION = parser.parse_args()
     if OPTION.hours == 0:
         OPTION.hours = 80
