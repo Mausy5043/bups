@@ -6,19 +6,20 @@ import os
 import sys
 
 _MYHOME = os.environ["HOME"]
-_DATABASE = "/srv/rmt/_databases/bups/upsdata.sqlite3"
+_DATABASE_FILENAME = "upsdata.sqlite3"
+_DATABASE = f"/srv/rmt/_databases/bups/{_DATABASE_FILENAME}"
 _WEBSITE = "/tmp/bups/site"
 
 if not os.path.isfile(_DATABASE):
-    _DATABASE = "/srv/databases/upsdata.sqlite3"
+    _DATABASE = f"/srv/databases/{_DATABASE_FILENAME}"
 if not os.path.isfile(_DATABASE):
-    _DATABASE = "/srv/data/upsdata.sqlite3"
+    _DATABASE = f"/srv/data/{_DATABASE_FILENAME}"
 if not os.path.isfile(_DATABASE):
-    _DATABASE = "/mnt/data/upsdata.sqlite3"
+    _DATABASE = f"/mnt/data/{_DATABASE_FILENAME}"
 if not os.path.isfile(_DATABASE):
-    _DATABASE = f".local/upsdata.sqlite3"
+    _DATABASE = f".local/{_DATABASE_FILENAME}"
 if not os.path.isfile(_DATABASE):
-    _DATABASE = f"{_MYHOME}/.sqlite3/upsdata.sqlite3"
+    _DATABASE = f"{_MYHOME}/.sqlite3/{_DATABASE_FILENAME}"
 if not os.path.isfile(_DATABASE):
     print("Database is missing.")
     sys.exit(1)
