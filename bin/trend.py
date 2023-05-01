@@ -177,8 +177,6 @@ def main():
     """
     This is the main loop
     """
-    global MYAPP
-    global OPTION
     if OPTION.hours:
         # plot_graph(
         #     f'/tmp/{MYAPP}/site/img/pastday_', fetch_last_day(OPTION.hours),
