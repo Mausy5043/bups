@@ -18,19 +18,17 @@ import mausy5043_common.libsignals as ml
 import mausy5043_common.libsqlite3 as m3
 from pynut3 import nut3
 
+import constants
+
+# fmt: off
 parser = argparse.ArgumentParser(description="Execute the bups daemon.")
-parser.add_argument(
-    "--host", type=str, required=True, help="IP-address or hostname of the UPS-server"
-)
+parser.add_argument("--host", type=str, required=True, help="IP-address or hostname of the UPS-server")
 parser_group = parser.add_mutually_exclusive_group(required=True)
 parser_group.add_argument("--start", action="store_true", help="start the daemon as a service")
-parser_group.add_argument(
-    "--debug", action="store_true", help="start the daemon in debugging mode"
-)
+parser_group.add_argument("--debug", action="store_true", help="start the daemon in debugging mode")
 OPTION = parser.parse_args()
+# fmt: on
 
-# pylint: disable=wrong-import-position
-import constants  # noqa
 
 # constants
 DEBUG = False
@@ -43,6 +41,7 @@ MYROOT = "/".join(HERE[0:-3])
 APPROOT = "/".join(HERE[0:-2])
 # host_name :
 NODE = os.uname()[1]
+
 
 # example values:
 # HERE: ['', 'home', 'pi', 'bups', 'bin', 'ups.py']

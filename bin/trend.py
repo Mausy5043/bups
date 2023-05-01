@@ -15,6 +15,18 @@ import constants
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
+# fmt: off
+parser = argparse.ArgumentParser(description="Create a trendgraph")
+parser.add_argument("-hr", "--hours", type=int, help="create an hour-trend of <HOURS>")
+parser.add_argument("-d", "--days", type=int, help="create a day-trend of <DAYS>")
+parser.add_argument("-m", "--months", type=int, help="number of months of data to use for the graph")
+parser_group = parser.add_mutually_exclusive_group(required=False)
+parser_group.add_argument("--debug", action="store_true", help="start in debugging mode")
+OPTION = parser.parse_args()
+# fmt: on
+
+# constants
+DEBUG = False  # sort of
 # app_name :
 HERE = os.path.realpath(__file__).split("/")
 # runlist id for daemon :
@@ -28,8 +40,6 @@ NODE = os.uname()[1]
 
 DATABASE = constants.TREND["database"]
 TABLE = constants.TREND["sql_table"]
-# OPTION = ""
-DEBUG = False
 
 
 def fetch_data(hours_to_fetch=48, aggregation="5min"):
@@ -204,15 +214,6 @@ def main():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Create a trendgraph")
-    parser.add_argument("-hr", "--hours", type=int, help="create an hour-trend of <HOURS>")
-    parser.add_argument("-d", "--days", type=int, help="create a day-trend of <DAYS>")
-    parser.add_argument(
-        "-m", "--months", type=int, help="number of months of data to use for the graph"
-    )
-    parser_group = parser.add_mutually_exclusive_group(required=False)
-    parser_group.add_argument("--debug", action="store_true", help="start in debugging mode")
-    OPTION = parser.parse_args()
     if OPTION.hours == 0:
         OPTION.hours = 80
     if OPTION.days == 0:
