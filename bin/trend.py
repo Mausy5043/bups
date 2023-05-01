@@ -80,7 +80,7 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
 
 def collate(prev_df, data_frame, columns_to_drop=None):
     if columns_to_drop is None:
-        columns_to_drop = list()
+        columns_to_drop = []
     # drop the 'columns_to_drop'
     for col in columns_to_drop:
         data_frame = data_frame.drop(col, axis=1, errors="ignore")
@@ -123,8 +123,8 @@ def plot_graph(output_file, data_dict, plot_title):
 
     Args:
         output_file (str): (str) name of the trendgraph file
-        data_dict (dict): contains the data for the lines. Each paramter is a separate pandas Dataframe
-                      {'df': Dataframe}
+        data_dict (dict): contains the data for the lines. Each key-value pair
+                          is a separate pandas Dataframe: {'df': Dataframe}
         plot_title (str): title to be displayed above the plot
     Returns:
         None
@@ -143,11 +143,10 @@ def plot_graph(output_file, data_dict, plot_title):
         fig_y = 7.5
         fig_fontsize = 13
         ahpla = 0.7
-        """
+
         # ###############################
         # Create a line plot of temperatures
         # ###############################
-        """
         plt.rc("font", size=fig_fontsize)
         ax1 = data_frame.plot(kind="line", figsize=(fig_x, fig_y))
         # linewidth and alpha need to be set separately
