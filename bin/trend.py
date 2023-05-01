@@ -123,8 +123,8 @@ def plot_graph(output_file, data_dict, plot_title):
 
     Args:
         output_file (str): (str) name of the trendgraph file
-        data_dict (dict): contains the data for the lines. Each paramter is a separate pandas Dataframe
-                      {'df': Dataframe}
+        data_dict (dict): contains the data for the lines. Each key-value pair
+                          is a separate pandas Dataframe: {'df': Dataframe}
         plot_title (str): title to be displayed above the plot
     Returns:
         None
