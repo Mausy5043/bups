@@ -80,7 +80,7 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
 
 def collate(prev_df, data_frame, columns_to_drop=None):
     if columns_to_drop is None:
-        columns_to_drop = list()
+        columns_to_drop = []
     # drop the 'columns_to_drop'
     for col in columns_to_drop:
         data_frame = data_frame.drop(col, axis=1, errors="ignore")
