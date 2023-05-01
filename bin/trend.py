@@ -19,7 +19,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 HERE = os.path.realpath(__file__).split("/")
 # runlist id for daemon :
 MYID = HERE[-1]
-MYAPP = HERE[-3]
+# MYAPP = HERE[-3]
 MYROOT = "/".join(HERE[0:-3])
 NODE = os.uname()[1]
 
@@ -28,7 +28,7 @@ NODE = os.uname()[1]
 
 DATABASE = constants.TREND["database"]
 TABLE = constants.TREND["sql_table"]
-OPTION = ""
+# OPTION = ""
 DEBUG = False
 
 
@@ -150,7 +150,7 @@ def plot_graph(output_file, data_dict, plot_title):
         plt.rc("font", size=fig_fontsize)
         ax1 = data_frame.plot(kind="line", figsize=(fig_x, fig_y))
         # linewidth and alpha need to be set separately
-        for i, l in enumerate(ax1.lines):
+        for i, l in enumerate(ax1.lines):  # pylint: disable=W0612
             plt.setp(l, alpha=ahpla, linewidth=2, linestyle="-")
         ax1.set_ylabel(parameter)
         if parameter == "temperature_ac":
