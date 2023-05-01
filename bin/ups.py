@@ -56,7 +56,6 @@ API_NUT = None
 
 def main():
     """Execute main loop."""
-    global API_NUT
     set_led("ups-state", "orange")
     killer = ml.GracefulKiller()
 
