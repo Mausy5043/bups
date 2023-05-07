@@ -18,19 +18,17 @@ import mausy5043_common.libsignals as ml
 import mausy5043_common.libsqlite3 as m3
 from pynut3 import nut3
 
+import constants
+
+# fmt: off
 parser = argparse.ArgumentParser(description="Execute the bups daemon.")
-parser.add_argument(
-    "--host", type=str, required=True, help="IP-address or hostname of the UPS-server"
-)
+parser.add_argument("--host", type=str, required=True, help="IP-address or hostname of the UPS-server")
 parser_group = parser.add_mutually_exclusive_group(required=True)
 parser_group.add_argument("--start", action="store_true", help="start the daemon as a service")
-parser_group.add_argument(
-    "--debug", action="store_true", help="start the daemon in debugging mode"
-)
+parser_group.add_argument("--debug", action="store_true", help="start the daemon in debugging mode")
 OPTION = parser.parse_args()
+# fmt: on
 
-# pylint: disable=wrong-import-position
-import constants  # noqa
 
 # constants
 DEBUG = False
@@ -44,6 +42,7 @@ APPROOT = "/".join(HERE[0:-2])
 # host_name :
 NODE = os.uname()[1]
 
+
 # example values:
 # HERE: ['', 'home', 'pi', 'bups', 'bin', 'ups.py']
 # MYID: 'ups.py
@@ -51,18 +50,15 @@ NODE = os.uname()[1]
 # MYROOT: /home/pi
 # NODE: rbups
 
-API_NUT = None
-
 
 def main():
     """Execute main loop."""
-    global API_NUT
     set_led("ups-state", "orange")
     killer = ml.GracefulKiller()
 
-    API_NUT = nut3.PyNUT3Client(host=OPTION.host, persistent=False, debug=DEBUG)
+    nut3_api = nut3.PyNUT3Client(host=OPTION.host, persistent=False, debug=DEBUG)
     print(f"Connected to UPS-server: {OPTION.host}")
-    ups_id = list(API_NUT.get_dict_ups().keys())[0]
+    ups_id = list(nut3_api.get_dict_ups().keys())[0]
 
     sql_db = m3.SqlDatabase(
         database=constants.UPS["database"],
@@ -82,7 +78,7 @@ def main():
         if time.time() > next_time:
             start_time = time.time()
             try:
-                data = convert_telegram(API_NUT.get_dict_vars(ups_id))
+                data = convert_telegram(nut3_api.get_dict_vars(ups_id))
                 mf.syslog_trace(f"Data retrieved: {data}", False, DEBUG)
                 set_led("ups-state", "green")
             except Exception:  # noqa
