@@ -153,6 +153,8 @@ install_bups() {
 
     # to suppress git detecting changes by chmod
     git config core.fileMode false
+    # to suppress: dpkg-preconfigure: unable to re-open stdin: No such file or directory
+    export DEBIAN_FRONTEND=noninteractive
     # note the branchname being used
     if [ ! -e "${APPROOT}/.${app_name}.branch" ]; then
         echo "${branch_name}" >"${APPROOT}/.${app_name}.branch"
