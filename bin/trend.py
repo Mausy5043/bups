@@ -62,9 +62,7 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
     if DEBUG:
         print(s3_query)
     with s3.connect(DATABASE) as con:
-        df = pd.read_sql_query(
-            s3_query, con, parse_dates="sample_time", index_col="sample_epoch"
-        )
+        df = pd.read_sql_query(s3_query, con, parse_dates="sample_time", index_col="sample_epoch")
     for c in df.columns:
         if c not in ["sample_time"]:
             df[c] = pd.to_numeric(df[c], errors="coerce")
@@ -76,7 +74,7 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
     df = df.interpolate(method="slinear")
     if DEBUG:
         print(df)
-    df_v = collate(None, df, columns_to_drop=["charge_bat", "load_ups", "runtime_bat"])
+    df_v = collate(None, df, columns_to_drop=["charge_bat", "load_ups", "runtime_bat", "volt_bat"])
     df_chg = collate(
         None, df, columns_to_drop=["volt_in", "volt_bat", "load_ups", "runtime_bat"]
     )
