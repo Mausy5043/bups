@@ -74,13 +74,11 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
     df = df.interpolate(method="slinear")
     if DEBUG:
         print(df)
-    df_v = collate(None, df, columns_to_drop=["charge_bat", "load_ups", "runtime_bat", "volt_bat"])
-    df_chg = collate(
-        None, df, columns_to_drop=["volt_in", "volt_bat", "load_ups", "runtime_bat"]
+    df_v = collate(
+        None, df, columns_to_drop=["charge_bat", "load_ups", "runtime_bat", "volt_bat"]
     )
-    df_run = collate(
-        None, df, columns_to_drop=["volt_in", "volt_bat", "charge_bat", "load_ups"]
-    )
+    df_chg = collate(None, df, columns_to_drop=["volt_in", "volt_bat", "load_ups", "runtime_bat"])
+    df_run = collate(None, df, columns_to_drop=["volt_in", "volt_bat", "charge_bat", "load_ups"])
 
     data_dict = {"V": df_v, "CHG": df_chg, "RUN": df_run}
     return data_dict
@@ -98,9 +96,7 @@ def collate(prev_df, data_frame, columns_to_drop=None):
     #     print(data_frame)
     # collate both dataframes
     if prev_df is not None:
-        data_frame = pd.merge(
-            prev_df, data_frame, left_index=True, right_index=True, how="outer"
-        )
+        data_frame = pd.merge(prev_df, data_frame, left_index=True, right_index=True, how="outer")
     if DEBUG:
         print(data_frame)
     return data_frame
