@@ -1,0 +1,18 @@
+# When making changes to this file update requirements.txt also !!
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - matplotlib
+  - numpy
+  - pandas
+  - pip
+  - pynut3
+  - requests
+  - scipy
+  # Not on conda channels:
+  - pip:
+      - mausy5043-common
