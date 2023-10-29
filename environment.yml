@@ -10,9 +10,9 @@ dependencies:
   - numpy
   - pandas
   - pip
-  - pynut3
   - requests
   - scipy
   # Not on conda channels:
   - pip:
       - mausy5043-common
+      - pynut3
