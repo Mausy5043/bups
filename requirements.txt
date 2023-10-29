@@ -1,6 +1,6 @@
 matplotlib
 mausy5043-common
-pandas==1.5.2
+pandas==2.1.2
 pynut3
 requests
 scipy
