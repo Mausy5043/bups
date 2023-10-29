@@ -168,7 +168,7 @@ install_bups() {
 
     # install Python3 stuff
     python3 -m pip install --upgrade pip setuptools wheel
-    python3 -m pip install -r requirements.txt
+    python3 -m pip install --upgrade -r requirements.txt
     echo
 
     # if [ -f "${db_full_path}" ]; then
