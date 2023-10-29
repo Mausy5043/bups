@@ -71,7 +71,7 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
     )
     # resample to monotonic timeline
     df = df.resample(f"{aggregation}").mean()
-    df = df.interpolate(method="slinear")
+    df = df.interpolate()
     if DEBUG:
         print(df)
     df_v = collate(
