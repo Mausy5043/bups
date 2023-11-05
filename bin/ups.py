@@ -13,6 +13,8 @@ import syslog
 import time
 import traceback
 
+from typing import Any
+
 import mausy5043_common.funfile as mf
 import mausy5043_common.libsignals as ml
 import mausy5043_common.libsqlite3 as m3
@@ -54,7 +56,7 @@ NODE = os.uname()[1]
 # NODE: rbups
 
 
-def main():
+def main() -> None:
     """Execute main loop."""
     set_led("ups-state", "orange")
     killer = ml.GracefulKiller()
@@ -70,9 +72,9 @@ def main():
         debug=DEBUG,
     )
 
-    report_interval = int(constants.UPS["report_interval"])
-    sample_interval = report_interval / int(constants.UPS["samplespercycle"])
-    next_time = 0
+    report_interval = float(constants.UPS["report_interval"])
+    sample_interval: float = report_interval / int(constants.UPS["samplespercycle"])
+    next_time = 0.0
     if not DEBUG:
         next_time = time.time() + (sample_interval - (time.time() % sample_interval))
     rprt_time = time.time() + (report_interval - (time.time() % report_interval))
@@ -135,7 +137,7 @@ def main():
             time.sleep(1.0)  # 1s resolution is enough
 
 
-def set_led(dev, colour):
+def set_led(dev: str, colour: str) -> None:
     """Activate te requested LED on the website"""
     mf.syslog_trace(f"{dev} is {colour}", False, DEBUG)
 
@@ -144,7 +146,7 @@ def set_led(dev, colour):
     shutil.copy(f"{in_dirfile}", out_dirfile)
 
 
-def convert_telegram(data_dict):
+def convert_telegram(data_dict: dict[str, str]) -> dict[str, Any]:
     """Prune the data.
 
     Extract only what we need.

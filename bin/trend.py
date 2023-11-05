@@ -7,8 +7,9 @@ import sqlite3 as s3
 import warnings
 from datetime import datetime as dt
 
+from typing import Any, Union
+
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 import constants
@@ -43,7 +44,9 @@ DATABASE = constants.TREND["database"]
 TABLE = constants.TREND["sql_table"]
 
 
-def fetch_data(hours_to_fetch=48, aggregation="5min"):
+def fetch_data(
+    hours_to_fetch: int = 48, aggregation: str = "5min"
+) -> Union[dict[str, pd.DataFrame], None]:
     """Query the database to fetch the requested data
 
     Args:
@@ -53,9 +56,10 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
     Returns:
         dictionary of dataframes
     """
-    df_v = None
-    df_chg = None
-    df_run = None
+    df_v: Union[pd.DataFrame, None] = None
+    df_chg: Union[pd.DataFrame, None] = None
+    df_run: Union[pd.DataFrame, None] = None
+    df: Union[pd.DataFrame, None] = None
     if DEBUG:
         print("*** fetching UPS data ***")
     where_condition = f" (sample_time >= datetime('now', '-{hours_to_fetch + 1} hours'))"
@@ -63,7 +67,9 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
     if DEBUG:
         print(s3_query)
     with s3.connect(DATABASE) as con:
-        df = pd.read_sql_query(s3_query, con, parse_dates="sample_time", index_col="sample_epoch")
+        df = pd.read_sql_query(
+            s3_query, con, parse_dates=["sample_time"], index_col="sample_epoch"
+        )
     for c in df.columns:
         if c not in ["sample_time"]:
             df[c] = pd.to_numeric(df[c], errors="coerce")
@@ -75,22 +81,25 @@ def fetch_data(hours_to_fetch=48, aggregation="5min"):
     df = df.interpolate()
     if DEBUG:
         print(df)
-    df_v = collate(
-        None, df, columns_to_drop=["charge_bat", "load_ups", "runtime_bat", "volt_bat"]
-    )
-    df_chg = collate(None, df, columns_to_drop=["volt_in", "volt_bat", "load_ups", "runtime_bat"])
-    df_run = collate(None, df, columns_to_drop=["volt_in", "volt_bat", "charge_bat", "load_ups"])
+    df_v = collate(None, df, cols_to_drop=["charge_bat", "load_ups", "runtime_bat", "volt_bat"])
+    df_chg = collate(None, df, cols_to_drop=["volt_in", "volt_bat", "load_ups", "runtime_bat"])
+    df_run = collate(None, df, cols_to_drop=["volt_in", "volt_bat", "charge_bat", "load_ups"])
 
     data_dict = {"V": df_v, "CHG": df_chg, "RUN": df_run}
     return data_dict
 
 
-def collate(prev_df, data_frame, columns_to_drop=None):
-    if columns_to_drop is None:
-        columns_to_drop = []
-    # drop the 'columns_to_drop'
-    for col in columns_to_drop:
+def collate(
+    prev_df: Union[pd.DataFrame, None],
+    data_frame: Union[pd.DataFrame, Any],
+    cols_to_drop: Union[list[str], None] = None,
+) -> Union[pd.DataFrame, Any]:
+    if cols_to_drop is None:
+        cols_to_drop = []
+    # drop the 'cols_to_drop'
+    for col in cols_to_drop:
         data_frame = data_frame.drop(col, axis=1, errors="ignore")
+        # data_frame = data_frame.drop(col, axis=1, errors="ignore", inplace=True)
     # if DEBUG:
     #     print()
     #     print(new_name)
@@ -103,27 +112,9 @@ def collate(prev_df, data_frame, columns_to_drop=None):
     return data_frame
 
 
-def y_ax_limits(data_set, accuracy):
-    """Determine proper y-axis scaling
-
-    Args:
-        data_set (a single dataframe row): containing the data
-        accuracy (int): round the y-limit up or down to the closest
-                        multiple of this parameter
-
-    Returns:
-        list: [lower limit, upper limit] as calculated
-    """
-    hi_limit = np.ceil(np.nanmax(data_set) / accuracy) * accuracy + (accuracy * 0.1)
-    lo_limit = np.floor(np.nanmin(data_set) / accuracy) * accuracy - (accuracy * 0.1)
-    if np.isnan(lo_limit):
-        lo_limit = 0
-    if np.isnan(hi_limit):
-        hi_limit = lo_limit + accuracy
-    return [lo_limit, hi_limit]
-
-
-def plot_graph(output_file, data_dict, plot_title):
+def plot_graph(
+    output_file: str, data_dict: dict[str, pd.DataFrame] | None, plot_title: str
+) -> None:
     """Plot the data into a graph
 
     Args:
@@ -159,7 +150,7 @@ def plot_graph(output_file, data_dict, plot_title):
             plt.setp(l, alpha=ahpla, linewidth=2, linestyle="-")
         ax1.set_ylabel(parameter)
         if parameter == "temperature_ac":
-            ax1.set_ylim([12, 28])
+            ax1.set_ylim((12.0, 28.0))
         ax1.legend(loc="lower left", ncol=8, framealpha=0.2)
         ax1.set_xlabel("Datetime")
         ax1.grid(which="major", axis="y", color="k", linestyle="--", linewidth=0.5)
@@ -168,7 +159,7 @@ def plot_graph(output_file, data_dict, plot_title):
         plt.savefig(fname=f"{output_file}_{parameter}.png", format="png")
 
 
-def main():
+def main() -> None:
     """
     This is the main loop
     """

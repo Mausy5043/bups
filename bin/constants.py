@@ -47,8 +47,8 @@ UPS = {
     "load_ups, runtime_bat"
     ")"
     "VALUES (?, ?, ?, ?, ?, ?, ?)",
-    "report_interval": 180,
-    "delay": 0,
+    "report_interval": "180.0",
+    "delay": "0.0",
     "samplespercycle": 1,
 }
 
