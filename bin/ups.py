@@ -62,7 +62,7 @@ def main() -> None:
     killer = ml.GracefulKiller()
 
     nut3_api = nut3.PyNUT3Client(host=OPTION.host, persistent=False, debug=DEBUG)
-    print(f"Connected to UPS-server: {OPTION.host}")
+    mf.syslog_trace(f"Connected to UPS-server: {OPTION.host}", True, DEBUG)
     ups_id = list(nut3_api.get_dict_ups().keys())[0]
 
     sql_db = m3.SqlDatabase(
