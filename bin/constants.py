@@ -49,7 +49,7 @@ UPS = {
     "VALUES (?, ?, ?, ?, ?, ?, ?)",
     "report_interval": "180.0",
     "delay": "0.0",
-    "samplespercycle": 1,
+    "samplespercycle": "1",
 }
 
 
