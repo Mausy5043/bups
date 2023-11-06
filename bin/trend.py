@@ -112,9 +112,7 @@ def collate(
     return data_frame
 
 
-def plot_graph(
-    output_file: str, data_dict: dict[str, pd.DataFrame] | None, plot_title: str
-) -> None:
+def plot_graph(output_file: str, data_dict: dict[str, pd.DataFrame], plot_title: str) -> None:
     """Plot the data into a graph
 
     Args:
