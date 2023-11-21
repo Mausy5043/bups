@@ -5,10 +5,10 @@
 import os
 import sys
 
-_MYHOME = os.environ["HOME"]
+_MYHOME: str = os.environ["HOME"]
 _DATABASE_FILENAME = "upsdata.sqlite3"
-_DATABASE = f"/srv/rmt/_databases/bups/{_DATABASE_FILENAME}"
-_WEBSITE = "/tmp/bups/site"
+_DATABASE: str = f"/srv/rmt/_databases/bups/{_DATABASE_FILENAME}"
+_WEBSITE = "/run/bups/site/img"
 
 if not os.path.isfile(_DATABASE):
     _DATABASE = f"/srv/databases/{_DATABASE_FILENAME}"
@@ -24,21 +24,25 @@ if not os.path.isfile(_DATABASE):
     print("Database is missing.")
     sys.exit(1)
 
+if not os.path.isdir(_WEBSITE):
+    print("Graphics will be diverted to /tmp")
+    _WEBSITE = "/tmp"   # nosec B108
+
 DT_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 # The paths defined here must match the paths defined in include.sh
 # $website_dir  and  $website_image_dir
-TREND = {
+TREND: dict[str, str] = {
     "database": _DATABASE,
     "sql_table": "ups",
     "website": _WEBSITE,
-    "day_graph": f"{_WEBSITE}/img/bups_hours",
-    "month_graph": f"{_WEBSITE}/img/bups_days",
-    "year_graph": f"{_WEBSITE}/img/bups_months",
+    "day_graph": f"{_WEBSITE}/bups_hours",
+    "month_graph": f"{_WEBSITE}/bups_days",
+    "year_graph": f"{_WEBSITE}/bups_months",
 }
 
 
-UPS = {
+UPS: dict[str, str] = {
     "database": _DATABASE,
     "sql_table": "ups",
     "sql_command": "INSERT INTO ups ("
