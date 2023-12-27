@@ -61,9 +61,9 @@ def main() -> None:
     set_led("ups-state", "orange")
     killer = ml.GracefulKiller()
 
-    nut3_api = nut3.PyNUT3Client(host=OPTION.host, persistent=False, debug=DEBUG)
+    nut3_api = nut3.PyNUT3Client(host=OPTION.host, persistent=False, descriptors=False, debug=DEBUG)
     mf.syslog_trace(f"Connected to UPS-server: {OPTION.host}", True, DEBUG)
-    ups_id = list(nut3_api.get_dict_ups().keys())[0]
+    ups_id = list(nut3_api.devices.keys())[0]
 
     sql_db = m3.SqlDatabase(
         database=constants.UPS["database"],
@@ -83,7 +83,7 @@ def main() -> None:
         if time.time() > next_time:
             start_time = time.time()
             try:
-                data = convert_telegram(nut3_api.get_dict_vars(ups_id))
+                data = convert_telegram(nut3_api.devices[ups_id]["vars"])
                 mf.syslog_trace(f"Data retrieved: {data}", False, DEBUG)
                 set_led("ups-state", "green")
             except Exception:  # noqa
