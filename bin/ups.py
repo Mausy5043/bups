@@ -85,6 +85,7 @@ def main() -> None:
         if time.time() > next_time:
             start_time = time.time()
             try:
+                nut3_api.update(ups_id)
                 data = convert_telegram(nut3_api.devices[ups_id]["vars"])
                 mf.syslog_trace(f"Data retrieved: {data}", False, DEBUG)
                 set_led("ups-state", "green")
