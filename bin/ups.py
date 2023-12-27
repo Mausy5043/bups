@@ -158,11 +158,11 @@ def convert_telegram(data_dict: dict[str, str]) -> dict[str, Any]:
     return {
         "sample_time": idx_dt.strftime(constants.DT_FORMAT),
         "sample_epoch": epoch,
-        "volt_in": data_dict["output.voltage"],
+        "volt_in": data_dict["output.voltage"][0],
         "volt_bat": -1,  # ##Not on Eaton Protection Station## data_dict['battery.voltage'],
-        "charge_bat": data_dict["battery.charge"],
-        "load_ups": data_dict["ups.load"],
-        "runtime_bat": data_dict["battery.runtime"],
+        "charge_bat": data_dict["battery.charge"][0],
+        "load_ups": data_dict["ups.load"][0],
+        "runtime_bat": data_dict["battery.runtime"][0],
     }
 
 
