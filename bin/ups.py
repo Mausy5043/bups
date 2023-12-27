@@ -61,7 +61,9 @@ def main() -> None:
     set_led("ups-state", "orange")
     killer = ml.GracefulKiller()
 
-    nut3_api = nut3.PyNUT3Client(host=OPTION.host, persistent=False, descriptors=False, debug=DEBUG)
+    nut3_api = nut3.PyNUT3Client(
+        host=OPTION.host, persistent=False, descriptors=False, debug=DEBUG
+    )
     mf.syslog_trace(f"Connected to UPS-server: {OPTION.host}", True, DEBUG)
     ups_id = list(nut3_api.devices.keys())[0]
 

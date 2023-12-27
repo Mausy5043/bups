@@ -26,7 +26,7 @@ if not os.path.isfile(_DATABASE):
 
 if not os.path.isdir(_WEBSITE):
     print("Graphics will be diverted to /tmp")
-    _WEBSITE = "/tmp"   # nosec B108
+    _WEBSITE = "/tmp"  # nosec B108
 
 DT_FORMAT = "%Y-%m-%d %H:%M:%S"
 
