@@ -1,6 +1,6 @@
 matplotlib
 mausy5043-common
 pandas
-pynut3
+PyNUTClient
 requests
 scipy

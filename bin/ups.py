@@ -18,7 +18,7 @@ from typing import Any
 import mausy5043_common.funfile as mf
 import mausy5043_common.libsignals as ml
 import mausy5043_common.libsqlite3 as m3
-from pynut3 import nut3
+from PyNUTClient import PyNUT as nut3    # https://pypi.org/project/PyNUTClient/
 
 import constants
 
@@ -61,11 +61,9 @@ def main() -> None:
     set_led("ups-state", "orange")
     killer = ml.GracefulKiller()
 
-    nut3_api = nut3.PyNUT3Client(
-        host=OPTION.host, persistent=False, descriptors=False, debug=DEBUG
-    )
-    mf.syslog_trace(f"Connected to UPS-server: {OPTION.host}", True, DEBUG)
-    ups_id = list(nut3_api.devices.keys())[0]
+    nut3_conn = nut3.PyNUTClient(host=OPTION.host, debug=DEBUG)
+    ups_id: str = nut3_conn.GetUPSNames()[0]
+    mf.syslog_trace(f"Connected to UPS-server: {OPTION.host}:{ups_id}", True, DEBUG)
 
     sql_db = m3.SqlDatabase(
         database=constants.UPS["database"],
@@ -85,8 +83,8 @@ def main() -> None:
         if time.time() > next_time:
             start_time = time.time()
             try:
-                nut3_api.update(ups_id)
-                data = convert_telegram(nut3_api.devices[ups_id]["vars"])
+                nut3_conn = nut3.PyNUTClient(host=OPTION.host, debug=DEBUG)
+                data = convert_telegram(nut3_conn.GetUPSVars(ups=ups_id))
                 mf.syslog_trace(f"Data retrieved: {data}", False, DEBUG)
                 set_led("ups-state", "green")
             except Exception:  # noqa
@@ -154,16 +152,18 @@ def convert_telegram(data_dict: dict[str, str]) -> dict[str, Any]:
 
     Extract only what we need.
     """
+    # get rid of b'' strings
+    data_dict = {key.decode('utf-8'): value.decode('utf-8') for key,value in data_dict.items()}
     idx_dt = dt.datetime.now()
     epoch = int(idx_dt.timestamp())
     return {
         "sample_time": idx_dt.strftime(constants.DT_FORMAT),
         "sample_epoch": epoch,
-        "volt_in": data_dict["output.voltage"][0],
+        "volt_in": data_dict["output.voltage"],
         "volt_bat": -1,  # ##Not on Eaton Protection Station## data_dict['battery.voltage'],
-        "charge_bat": data_dict["battery.charge"][0],
-        "load_ups": data_dict["ups.load"][0],
-        "runtime_bat": data_dict["battery.runtime"][0],
+        "charge_bat": data_dict["battery.charge"],
+        "load_ups": data_dict["ups.load"],
+        "runtime_bat": data_dict["battery.runtime"],
     }
 
 
