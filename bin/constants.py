@@ -19,7 +19,8 @@ if not os.path.isfile(_DATABASE):
 if not os.path.isfile(_DATABASE):
     _DATABASE = f".local/{_DATABASE_FILENAME}"
 if not os.path.isfile(_DATABASE):
-    _DATABASE = f"{_MYHOME}/.sqlite3/{_DATABASE_FILENAME}"
+    # ln -s ~/Dropbox/raspi/_databases/bups/ ~/.sqlite/bups
+    _DATABASE = f"{_MYHOME}/.sqlite3/bups/{_DATABASE_FILENAME}"
 if not os.path.isfile(_DATABASE):
     print("Database is missing.")
     sys.exit(1)
