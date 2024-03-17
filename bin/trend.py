@@ -50,9 +50,7 @@ DATABASE = constants.TREND["database"]
 TABLE = constants.TREND["sql_table"]
 
 
-def fetch_data(
-    hours_to_fetch: int = 48, aggregation: str = "5min"
-) -> Union[dict[str, pd.DataFrame], None]:
+def fetch_data(hours_to_fetch: int = 48, aggregation: str = "5min") -> dict[str, pd.DataFrame]:
     """Query the database to fetch the requested data
 
     Args:
@@ -62,10 +60,10 @@ def fetch_data(
     Returns:
         dictionary of dataframes
     """
-    df_v: Union[pd.DataFrame, None] = None
-    df_chg: Union[pd.DataFrame, None] = None
-    df_run: Union[pd.DataFrame, None] = None
-    df: Union[pd.DataFrame, None] = None
+    df_v: pd.DataFrame
+    df_chg: pd.DataFrame
+    df_run: pd.DataFrame
+    df: pd.DataFrame
     if DEBUG:
         print("*** fetching UPS data ***")
     where_condition = f" (sample_time >= datetime('now', '-{hours_to_fetch + 1} hours'))"
@@ -87,19 +85,15 @@ def fetch_data(
     df = df.interpolate()
     if DEBUG:
         print(df)
-    df_v = collate(None, df, cols_to_drop=["charge_bat", "load_ups", "runtime_bat", "volt_bat"])
-    df_chg = collate(None, df, cols_to_drop=["volt_in", "volt_bat", "load_ups", "runtime_bat"])
-    df_run = collate(None, df, cols_to_drop=["volt_in", "volt_bat", "charge_bat", "load_ups"])
+    df_v = collate(df, cols_to_drop=["charge_bat", "load_ups", "runtime_bat", "volt_bat", "sample_time"])
+    df_chg = collate(df, cols_to_drop=["volt_in", "volt_bat", "load_ups", "runtime_bat", "sample_time"])
+    df_run = collate(df, cols_to_drop=["volt_in", "volt_bat", "charge_bat", "load_ups", "sample_time"])
 
-    data_dict = {"V": df_v, "CHG": df_chg, "RUN": df_run}
+    data_dict: dict[str, pd.DataFrame] = {"V": df_v, "CHG": df_chg, "RUN": df_run}
     return data_dict
 
 
-def collate(
-    prev_df: Union[pd.DataFrame, None],
-    data_frame: Union[pd.DataFrame, Any],
-    cols_to_drop: Union[list[str], None] = None,
-) -> Union[pd.DataFrame, Any]:
+def collate(data_frame: pd.DataFrame, cols_to_drop: list[str]=[]) -> pd.DataFrame:
     if cols_to_drop is None:
         cols_to_drop = []
     # drop the 'cols_to_drop'
@@ -111,8 +105,8 @@ def collate(
     #     print(new_name)
     #     print(data_frame)
     # collate both dataframes
-    if prev_df is not None:
-        data_frame = pd.merge(prev_df, data_frame, left_index=True, right_index=True, how="outer")
+    # if prev_df is not None:
+    #     data_frame = pd.merge(prev_df, data_frame, left_index=True, right_index=True, how="outer")
     if DEBUG:
         print(data_frame)
     return data_frame
